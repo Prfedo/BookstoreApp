@@ -30,6 +30,7 @@ public class DatabaseManager {
             qTable4 = "create table if not exists Orders(ID integer not null primary key autoincrement,user_id integer not null,"
                     + "total_price real not null,created_at Text not null,"
                     + "foreign key(user_id) references Users(ID))";
+            
             ss.execute("PRAGMA foreign_keys = ON");
             ss.execute(queryTable1);
             ss.execute(qTable2);
