@@ -10,7 +10,7 @@ public class ConnectSQL {
         r=DriverManager.getConnection(URL);
         }
         catch(SQLException e){
-        System.out.println(e.getMessage());
+        System.out.println("Connection Error "+e.getMessage());
         }
         return r;
     }
