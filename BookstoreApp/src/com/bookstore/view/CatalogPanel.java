@@ -8,7 +8,8 @@ public class CatalogPanel extends JPanel {
     private JPanel booksGrid;
     private JTextField searchField;
     private JPanel genrePanel;
-    
+    private final java.util.Map<String, ImageIcon> imageCache = new java.util.HashMap<>(); // FIX 2: cache
+
     //hovercode
     private void addHoverEffect(JButton btn, Color normal, Color hover) {
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -24,13 +25,13 @@ public class CatalogPanel extends JPanel {
 
     public String[][] books = {
             {"Fourth Wing: Empyrean", "Rebecca Yarros", "Fantasy", "$13.88","FW.jpg"},
-            {"Atomic Habits", "James Clear", "Self-Help", "$21.99"},
-            {"The Silent Patient", "Alex Michaelides", "Thriller", "$16.99"},
-            {"Sapiens", "Yuval Noah Harari", "Biography", "$29.99"},
-            {"Project Hail Mary", "Andy Weir", "Science Fiction", "$24.99"},
-            {"Educated", "Tara Westover", "Biography", "$19.99"},
-            {"The Alchemist", "Paulo Coelho", "Fiction", "$14.99"},
-            {"Dune", "Frank Herbert", "Science Fiction", "$22.99"}
+            {"The Cruel Prince", " Holly Black", "Fantasy", "$21.99","CP.jpg"},
+            {"The Silent Patient", "Alex Michaelides", "Thriller", "$16.99","SP.jpg"},
+            {"Throne of Glass", "Sarah J. Maas", "Fantasy", "$29.99","TOG.jpg"},
+            {"Project Hail Mary", "Andy Weir", "Science Fiction", "$24.99","PHM.jpg"},
+            {"Song of Achilles", "Madlin Miller", "Fiction", "$19.99","SOA.jpg"},
+            {"The Alchemist", "Paulo Coelho", "Fiction", "$14.99","TA.jpg"},
+            {"Dune", "Frank Herbert", "Science Fiction", "$22.99","D.jpg"}
         };
     public CatalogPanel() {
 
@@ -133,7 +134,7 @@ public class CatalogPanel extends JPanel {
         heroPanel.setPreferredSize(new Dimension(1000, 250)); //sizw
 
         //quote
-        JLabel qu = new JLabel("Books You’ll Actually Finish");
+        JLabel qu = new JLabel("Books You'll Actually Finish");
         qu.setFont(new Font("Serif", Font.BOLD, 36));
         qu.setForeground(new Color(59, 31, 10));
         qu.setBounds(60, 25, 800, 50); // start LOW
@@ -164,15 +165,15 @@ public class CatalogPanel extends JPanel {
         heroPanel.add(desc);
         heroPanel.add(BB);
 
-        // SEARCH + GENRES + BOOKS all in one scrollable center panel
+         //SEARCH + GENRES + BOOKS all in one scrollable center panel
         JPanel centerPanel = new JPanel();
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         centerPanel.setBackground(new Color(245, 240, 232));
 
-// ADD HERO
+        //ADD HERO
         centerPanel.add(heroPanel);
 
-// SEARCH BAR
+       //SEARCH BAR
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 60, 10));
         searchPanel.setBackground(new Color(245, 240, 232));
         searchField = new JTextField(30);
@@ -240,65 +241,7 @@ public class CatalogPanel extends JPanel {
         booksGrid.setBorder(BorderFactory.createEmptyBorder(16, 60, 32, 60));
 
         for (String[] book : books) {
-            JPanel card = new JPanel();
-            card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-            card.setBackground(Color.WHITE);
-            card.setBorder(BorderFactory.createLineBorder(new Color(220, 210, 195), 1));
-            // Book cover placeholder
-            JPanel coverPanel = new JPanel(new BorderLayout());
-            coverPanel.setPreferredSize(new Dimension(350, 500));
-            coverPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1104));
-
-            java.net.URL imgURL = getClass().getResource("/com/bookstore/view/FW.jpg");
-            ImageIcon ic = new ImageIcon(imgURL);
-            Image scaled = ic.getImage().getScaledInstance(350, 500, Image.SCALE_SMOOTH);
-
-            // IMPORTANT: wrap again in ImageIcon
-            JLabel coverLabel = new JLabel(new ImageIcon(scaled));
-            coverPanel.add(coverLabel, BorderLayout.CENTER);
-
-            // Book info
-            JPanel infoPanel = new JPanel();
-            infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
-            infoPanel.setBackground(Color.WHITE);
-            infoPanel.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
-
-            JLabel titleLabel = new JLabel(book[0]);
-            titleLabel.setFont(new Font("Georgia", Font.BOLD, 13));
-            titleLabel.setForeground(new Color(40, 20, 5));
-
-            JLabel authorLabel = new JLabel(book[1]);
-            authorLabel.setFont(new Font("Arial", Font.ITALIC, 11));
-            authorLabel.setForeground(new Color(130, 130, 130));
-
-            JPanel footerPanel = new JPanel(new BorderLayout());
-            footerPanel.setBackground(Color.WHITE);
-            footerPanel.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
-
-            JLabel priceLabel = new JLabel(book[3]);
-            priceLabel.setFont(new Font("Arial", Font.BOLD, 14));
-            priceLabel.setForeground(new Color(139, 69, 19));
-
-            JButton addbtn = new JButton("Add To Cart");
-            addbtn.setBackground(new Color(139, 69, 19));
-            addbtn.setForeground(Color.WHITE);
-            addbtn.setFont(new Font("Arial", Font.BOLD, 12));
-            addbtn.setBorderPainted(false);
-            addbtn.setFocusPainted(false);
-            addbtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            addHoverEffect(addbtn, new Color(139, 69, 19), new Color(160, 82, 45));
-
-            footerPanel.add(priceLabel, BorderLayout.WEST);
-            footerPanel.add(addbtn, BorderLayout.EAST);
-
-            infoPanel.add(titleLabel);
-            infoPanel.add(Box.createVerticalStrut(4));
-            infoPanel.add(authorLabel);
-            infoPanel.add(Box.createVerticalStrut(8));
-            infoPanel.add(footerPanel);
-            card.add(coverPanel);
-            card.add(infoPanel);
-            booksGrid.add(card);
+            booksGrid.add(createBookCard(book)); // FIX: use createBookCard instead of duplicating
         }
 
         centerPanel.add(booksGrid);
@@ -324,6 +267,7 @@ public class CatalogPanel extends JPanel {
     booksGrid.revalidate();
     booksGrid.repaint();
 }
+
   private JPanel createBookCard(String[] book) {
     JPanel card ,coverPanel,infoPanel;
     JLabel coverLabel ,titleLabel,authorLabel;
@@ -333,18 +277,19 @@ public class CatalogPanel extends JPanel {
     card.setBackground(Color.WHITE);
     card.setBorder(BorderFactory.createLineBorder(new Color(100,100,100),1));
 
-    // COVER
+    // COVER — FIX 2: use cache to avoid re-scaling on every filter
     coverPanel = new JPanel(new BorderLayout());
     coverPanel.setPreferredSize(new Dimension(350, 500));
 
-    java.net.URL imgURL = getClass().getResource("/com/bookstore/view/" + book[4]);
-    ImageIcon ic = new ImageIcon(imgURL);
-    Image scaled = ic.getImage().getScaledInstance(350, 500, Image.SCALE_SMOOTH);
+    ImageIcon cachedIcon = imageCache.computeIfAbsent(book[4], key -> {
+        java.net.URL imgURL = getClass().getResource("/com/bookstore/view/I/" + key);
+        Image scaled = new ImageIcon(imgURL).getImage().getScaledInstance(350, 500, Image.SCALE_SMOOTH);
+        return new ImageIcon(scaled);
+    });
 
-    coverLabel = new JLabel(new ImageIcon(scaled));
+    coverLabel = new JLabel(cachedIcon);
     coverPanel.add(coverLabel, BorderLayout.CENTER);
 
-    // TEXT
     titleLabel = new JLabel(book[0]);
     titleLabel.setFont(new Font("Georgia", Font.BOLD, 13));
     titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);   // CENTER
@@ -352,7 +297,6 @@ public class CatalogPanel extends JPanel {
     authorLabel = new JLabel(book[1]);
     authorLabel.setAlignmentX(Component.CENTER_ALIGNMENT);  // CENTER
 
-    // INFO PANEL
     infoPanel = new JPanel();
     infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
     infoPanel.setBackground(Color.WHITE);
@@ -365,7 +309,30 @@ public class CatalogPanel extends JPanel {
     infoPanel.add(Box.createVerticalStrut(3));
     infoPanel.add(authorLabel);
 
-    // ADD EVERYTHING (your way)
+    // FIX 1: add the missing footer with price + Add to Cart
+    JPanel footerPanel = new JPanel(new BorderLayout());
+    footerPanel.setBackground(Color.WHITE);
+    footerPanel.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
+
+    JLabel priceLabel = new JLabel(book[3]);
+    priceLabel.setFont(new Font("Arial", Font.BOLD, 14));
+    priceLabel.setForeground(new Color(139, 69, 19));
+
+    JButton addbtn = new JButton("Add To Cart");
+    addbtn.setBackground(new Color(139, 69, 19));
+    addbtn.setForeground(Color.WHITE);
+    addbtn.setFont(new Font("Arial", Font.BOLD, 12));
+    addbtn.setBorderPainted(false);
+    addbtn.setFocusPainted(false);
+    addbtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    addHoverEffect(addbtn, new Color(139, 69, 19), new Color(160, 82, 45));
+
+    footerPanel.add(priceLabel, BorderLayout.WEST);
+    footerPanel.add(addbtn, BorderLayout.EAST);
+
+    infoPanel.add(Box.createVerticalStrut(8));
+    infoPanel.add(footerPanel);
+
     card.add(coverPanel);
     card.add(infoPanel);
 
