@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class CatalogPanel extends JPanel {
-
+    private JScrollPane scrollPane;
     private JPanel booksGrid;
     private JTextField searchField;
     private JPanel genrePanel;
@@ -19,6 +19,19 @@ public class CatalogPanel extends JPanel {
 
             public void mouseExited(java.awt.event.MouseEvent e) {
                 btn.setBackground(normal);
+            }
+        });
+    }
+    
+    private void addHoverEffectt(JLabel btn, Color normal, Color hover) {
+        
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                btn.setForeground(normal);
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                btn.setForeground(hover);
             }
         });
     }
@@ -71,42 +84,31 @@ public class CatalogPanel extends JPanel {
 
         //NAV LINKS(RIGHT)
         JLabel homeLink = new JLabel("Home");
-        homeLink.setFont(
-                new Font("Arial", Font.PLAIN, 16));
-        homeLink.setForeground(
-                new Color(85, 85, 85));
-        homeLink.setCursor(
-                new Cursor(Cursor.HAND_CURSOR));
-        //THE HOVERNG EFFECT
+        
+        homeLink.setFont(new Font("Arial", Font.PLAIN, 16));
+        homeLink.setForeground(new Color(85, 85, 85));
+        homeLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
         homeLink.addMouseListener(new java.awt.event.MouseAdapter() {
+       public void mouseClicked(java.awt.event.MouseEvent e) {
+        scrollPane.getVerticalScrollBar().setValue(0);
+       }
+     });     
+       addHoverEffectt(homeLink, new Color(139, 69, 19), new Color(85, 85, 85));
 
-            public void mouseEntered(java.awt.event.MouseEvent e) {
-                homeLink.setForeground(new Color(139, 69, 19));
-            }
-
-            public void mouseExited(java.awt.event.MouseEvent e) {
-                homeLink.setForeground(new Color(85, 85, 85));
-            }
-        }
-        );
 
         JLabel catalogLink = new JLabel("Collection");
-
+        
         catalogLink.setFont(new Font("Arial", Font.PLAIN, 16));
         catalogLink.setForeground(new Color(85, 85, 85));
         catalogLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        addHoverEffectt(catalogLink, new Color(139, 69, 19), new Color(85, 85, 85));
         catalogLink.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent e) {
-                catalogLink.setForeground(new Color(139, 69, 19));
-            }
-
-            public void mouseExited(java.awt.event.MouseEvent e) {
-                catalogLink.setForeground(new Color(85, 85, 85));
-            }
-        });
-
+       public void mouseClicked(java.awt.event.MouseEvent e) {
+        booksGrid.scrollRectToVisible(booksGrid.getBounds());
+        scrollPane.getVerticalScrollBar().setValue(booksGrid.getY());
+        }
+     });
         JButton registerBtn = new JButton("Register");
-
         registerBtn.setBackground(new Color(139, 69, 19));
         registerBtn.setForeground(Color.WHITE);
         registerBtn.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -116,12 +118,23 @@ public class CatalogPanel extends JPanel {
         addHoverEffect(registerBtn, new Color(139, 69, 19), new Color(160, 82, 45));
 
         JPanel navRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 10));
-
         navRight.setBackground(Color.WHITE);
+        JLabel loginLink = new JLabel("Login");
+        loginLink.setFont(new Font("Arial", Font.PLAIN, 16));
+        loginLink.setForeground(new Color(85, 85, 85));
+        loginLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        addHoverEffectt(loginLink, new Color(139, 69, 19), new Color(85, 85, 85));
+        loginLink.addMouseListener(new java.awt.event.MouseAdapter() {
+      public void mouseClicked(java.awt.event.MouseEvent e) {
+         // LoginPanel login = new LoginPanel();
+      }
+   });
+        
+      
         navRight.add(homeLink);
         navRight.add(catalogLink);
+        navRight.add(loginLink);
         navRight.add(registerBtn);
-
         //ADD NAVBAR
         navbar.add(navLeft, BorderLayout.WEST);
         navbar.add(navRight, BorderLayout.EAST);
@@ -150,13 +163,18 @@ public class CatalogPanel extends JPanel {
 
         //to collection button
         JButton BB = new JButton("To Your New TBR");
-
+        
         BB.setBackground(new Color(139, 69, 19));
         BB.setForeground(Color.WHITE);
         BB.setFocusPainted(false);
         BB.setBorderPainted(false);
         BB.setFont(new Font("Arial", Font.BOLD, 14));
         BB.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        BB.addMouseListener(new java.awt.event.MouseAdapter() {
+       public void mouseClicked(java.awt.event.MouseEvent e) {
+        scrollPane.getVerticalScrollBar().setValue(booksGrid.getY());
+        }
+     });
         addHoverEffect(BB, new Color(160, 82, 45), new Color(139, 69, 19));
         BB.setBounds(60, 150, 200, 40); // start LOWEST
 
@@ -222,7 +240,7 @@ public class CatalogPanel extends JPanel {
                 if (b.getText().equals(genre)) {
                     b.setBackground(new Color(139, 69, 19));
                     b.setForeground(Color.WHITE);
-                    b.setBorderPainted(false);
+                    b.setBorderPainted (true);
                 } else {
                     b.setBackground(Color.WHITE);
                     b.setForeground(new Color(60, 60, 60));
@@ -247,8 +265,7 @@ public class CatalogPanel extends JPanel {
         centerPanel.add(booksGrid);
 
         // MAKE IT SCROLLABLE
-        JScrollPane scrollPane = new JScrollPane(centerPanel);
-
+        scrollPane = new JScrollPane(centerPanel);
         scrollPane.setBorder(null);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         add(scrollPane, BorderLayout.CENTER);
@@ -326,7 +343,11 @@ public class CatalogPanel extends JPanel {
     addbtn.setFocusPainted(false);
     addbtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
     addHoverEffect(addbtn, new Color(139, 69, 19), new Color(160, 82, 45));
-
+    addbtn.addActionListener(e -> {
+    JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(CatalogPanel.this);
+    BookDetailDialog dialog = new BookDetailDialog(parent, book);
+    dialog.setVisible(true);
+    });
     footerPanel.add(priceLabel, BorderLayout.WEST);
     footerPanel.add(addbtn, BorderLayout.EAST);
 
@@ -335,7 +356,13 @@ public class CatalogPanel extends JPanel {
 
     card.add(coverPanel);
     card.add(infoPanel);
-
+    card.addMouseListener(new java.awt.event.MouseAdapter() {
+    public void mouseClicked(java.awt.event.MouseEvent e) {
+        JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(CatalogPanel.this);
+        BookDetailDialog dialog = new BookDetailDialog(parent, book);
+        dialog.setVisible(true);
+    }
+ });
     return card;
  }
 }
