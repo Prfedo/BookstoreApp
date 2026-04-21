@@ -7,14 +7,16 @@ public class Book {
     private String genre;
     private double price;
     private int stock;
+    private String cover;
 
-    public Book(int id, String title, String author, String genre, double price, int stock) {
+    public Book(int id, String title, String author, String genre, double price, int stock,String cover) {
         this.id = id;
         this.title = title;
         this.author = author;
         this.genre = genre;
         this.price = price;
         this.stock = stock;
+        this.cover = cover;
     }
 
     public int getId()          { return id; }
@@ -23,10 +25,14 @@ public class Book {
     public String getGenre()    { return genre; }
     public double getPrice()    { return price; }
     public int getStock()       { return stock; }
+    public String getCover()    { return cover; }
+    
 
     public void setTitle(String title)   { this.title = title; }
     public void setAuthor(String author) { this.author = author; }
     public void setGenre(String genre)   { this.genre = genre; }
     public void setPrice(double price)   { this.price = price; }
     public void setStock(int stock)      { this.stock = stock; }
+    public void setCover(String cover)   { this.cover = cover; }
+    
 }

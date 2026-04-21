@@ -12,13 +12,13 @@ public class UserController {
     }
 
     // Register a new user
-    public boolean register(String name, String email, String password) {
+    public boolean register(String name, String username, String email, String password) {
         for (User u : users) {
             if (u.getEmail().equalsIgnoreCase(email)) {
                 return false; // email already exists
             }
         }
-        User newUser = new User(users.size() + 1, name, email, password, false);
+        User newUser = new User(users.size() + 1, name,username, email, password, false);
         users.add(newUser);
         return true;
     }

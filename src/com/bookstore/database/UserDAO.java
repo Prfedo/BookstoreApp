@@ -21,16 +21,7 @@ public class UserDAO {
             System.out.println("Erron in Register: " + ee.getMessage());
             return false;
         } finally {
-            try {
-                if (ss != null) {
-                    ss.close();
-                }
-                if (r != null) {
-                    r.close();
-                }
-            } catch (SQLException e) {
-                System.out.println(e.getMessage());
-            }
+            DatabaseManager.closeAll(r, ss, rs);
         }
     }
 
@@ -56,16 +47,7 @@ public class UserDAO {
             System.out.println("Error in login: " + ee.getMessage());
             return null;
         } finally {
-            try {
-                if (ss != null) {
-                    ss.close();
-                }
-                if (r != null) {
-                    r.close();
-                }
-            } catch (SQLException e) {
-                System.out.println(e.getMessage());
-            }
+            DatabaseManager.closeAll(r, ss, rs);
         }
     }
 
@@ -89,17 +71,7 @@ public class UserDAO {
             System.out.println("Error in gerUserById: " + ee.getMessage());
             return null;
         } finally {
-            try {
-                if (ss != null) {
-                    ss.close();
-                }
-                if (r != null) {
-                    r.close();
-                }
-            } catch (SQLException e) {
-                System.out.println(e.getMessage());
-                return null;
-            }
+            DatabaseManager.closeAll(r, ss, rs);
         }
     }
 }
