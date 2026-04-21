@@ -9,7 +9,7 @@ public class Order {
     private double totalPrice;
     private String date;
 
-    public Order(int id, int userId, List<CartItem> items, String date) {
+    public Order(int id, int userId, List<CartItem> items,double totalPrice, String date) {
         this.id = id;
         this.userId = userId;
         this.items = items;
