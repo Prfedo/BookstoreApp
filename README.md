@@ -51,7 +51,6 @@ BookstoreApp/
 │   ├── ICON.png
 │   ├── Appicon.jpg
 │   └── books_cover/
-├── test/
 ├── JDBC SQLite/
 │   └── sqlite-jdbc-3.51.3.0.jar
 ├── bookstore.db
