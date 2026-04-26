@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.bookstore.model;
 
-/**
- *
- * @author Admin
- */
 import java.util.List;
 
 public class Order {
@@ -17,7 +9,7 @@ public class Order {
     private double totalPrice;
     private String date;
 
-    public Order(int id, int userId, List<CartItem> items, String date) {
+    public Order(int id, int userId, List<CartItem> items,double totalPrice, String date) {
         this.id = id;
         this.userId = userId;
         this.items = items;
