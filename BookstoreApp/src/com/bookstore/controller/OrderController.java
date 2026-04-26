@@ -16,7 +16,11 @@ public class OrderController {
     // Place a new order
     public Order placeOrder(int userId, List<CartItem> cartItems) {
         String date = LocalDate.now().toString();
-        Order order = new Order(orders.size() + 1, userId, cartItems, date);
+        double totalPrice = 0;
+        for (CartItem item : cartItems) {
+            totalPrice += item.getSubtotal();
+        }
+        Order order = new Order(orders.size() + 1, userId, cartItems, totalPrice, date);
         orders.add(order);
         return order;
     }
