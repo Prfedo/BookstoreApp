@@ -133,22 +133,6 @@ Book cover paths are resolved from filenames and displayed from:
 
 ---
 
-## Testing
-
-Manual smoke test is available:
-
-- `test/DatabaseFolderSmokeTest.java`
-
-It verifies:
-
-- DB connection
-- table creation
-- `BookDAO` operations
-- `UserDAO` operations
-- `OrderDAO` save/retrieve flow
-
----
-
 ## Team Workflow (Recommended)
 
 - Use feature branches (`member2-database`, `member3-catalog`, etc.)
