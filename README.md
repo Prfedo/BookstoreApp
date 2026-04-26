@@ -45,14 +45,14 @@ BookstoreApp/
 │   └── com/bookstore/
 │       ├── controller/
 │       ├── database/
+│           ├── JDBC SQLite/
+│               └── sqlite-jdbc-3.51.3.0.jar
 │       ├── model/
 │       └── view/
 ├── pics/
 │   ├── ICON.png
 │   ├── Appicon.jpg
 │   └── books_cover/
-├── JDBC SQLite/
-│   └── sqlite-jdbc-3.51.3.0.jar
 ├── bookstore.db
 └── README.md
 ```
