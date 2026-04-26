@@ -1,26 +1,24 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.bookstore.view;
 
-/**
- *
- * @author Admin
- */
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
+import javax.swing.*;
+import java.awt.Image;
 
 public class MainWindow extends JFrame {
 
     public MainWindow() {
-        setTitle("Bookstore App");
-        setSize(900, 600);
+        setTitle("BOOKSTORE");
+        setSize(1000, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-
-        JLabel label = new JLabel("Welcome to Bookstore!", SwingConstants.CENTER);
-        add(label);
+        //Appicon
+        try {
+            ImageIcon icon = new ImageIcon("pics/Appicon.jpg");
+            Image img = icon.getImage().getScaledInstance(50,50, Image.SCALE_SMOOTH);
+            setIconImage(img);
+        } catch (Exception e) {
+            System.out.println("Icon error: " + e.getMessage());
+        }
+        CatalogPanel catalogPanel = new CatalogPanel();
+        add(catalogPanel);
     }
 }
