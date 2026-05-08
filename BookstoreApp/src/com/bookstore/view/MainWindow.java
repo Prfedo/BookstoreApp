@@ -1,11 +1,16 @@
 package com.bookstore.view;
 
+import com.bookstore.model.User;
 import javax.swing.*;
 import java.awt.Image;
 
 public class MainWindow extends JFrame {
 
     public MainWindow() {
+        this(null);
+    }
+
+    public MainWindow(User user) {
         setTitle("BOOKSTORE");
         setSize(1000, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -18,7 +23,7 @@ public class MainWindow extends JFrame {
         } catch (Exception e) {
             System.out.println("Icon error: " + e.getMessage());
         }
-        CatalogPanel catalogPanel = new CatalogPanel();
+        CatalogPanel catalogPanel = new CatalogPanel(user);
         add(catalogPanel);
     }
 }

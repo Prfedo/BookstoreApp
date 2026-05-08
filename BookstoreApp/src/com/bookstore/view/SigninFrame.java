@@ -1,6 +1,7 @@
 package com.bookstore.view;
 
 import com.bookstore.database.UserDAO;
+import com.bookstore.model.User;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
@@ -28,7 +29,14 @@ public class SigninFrame extends JFrame {
         setResizable(false);
         getContentPane().setBackground(BG);
         setLayout(new GridBagLayout());
-
+        //App icon
+        try {
+            ImageIcon icon = new ImageIcon("pics/Appicon.jpg");
+            Image img = icon.getImage().getScaledInstance(50,50, Image.SCALE_SMOOTH);
+            setIconImage(img);
+        } catch (Exception e) {
+            System.out.println("Icon error: " + e.getMessage());
+        }
         add(buildCard());
         setVisible(true);
     }
@@ -99,9 +107,12 @@ public class SigninFrame extends JFrame {
 
             boolean created = userDAO.register(name, u, em, p);
             if (created) {
-                JOptionPane.showMessageDialog(this, "Account created! Please sign in.",
+                JOptionPane.showMessageDialog(this, "Account created! Welcome, " + name + "!",
                         "Success", JOptionPane.INFORMATION_MESSAGE);
-                new LoginFrame();
+                // Log the user in immediately after registration
+                User user = userDAO.login(u, p);
+                MainWindow window = new MainWindow(user); // pass registered user
+                window.setVisible(true);
                 dispose();
             } else {
                 JOptionPane.showMessageDialog(this, "Could not create account. Email may already exist.",

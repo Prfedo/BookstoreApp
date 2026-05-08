@@ -30,6 +30,14 @@ public class LoginFrame extends JFrame {
         getContentPane().setBackground(BG);
         setLayout(new GridBagLayout());
         add(buildCard());
+        //App icon
+        try {
+            ImageIcon icon = new ImageIcon("pics/Appicon.jpg");
+            Image img = icon.getImage().getScaledInstance(50,50, Image.SCALE_SMOOTH);
+            setIconImage(img);
+        } catch (Exception e) {
+            System.out.println("Icon error: " + e.getMessage());
+        }
         setVisible(true);
     }
 
@@ -91,7 +99,7 @@ public class LoginFrame extends JFrame {
             User user = userDAO.login(u, p);
             if (user != null) {
                 JOptionPane.showMessageDialog(this, "Welcome, " + user.getName() + "!");
-                MainWindow window = new MainWindow();
+                MainWindow window = new MainWindow(user); // pass logged-in user
                 window.setVisible(true);
                 dispose();
             } else {

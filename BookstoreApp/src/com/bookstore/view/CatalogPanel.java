@@ -2,6 +2,7 @@ package com.bookstore.view;
 
 import com.bookstore.database.BookDAO;
 import com.bookstore.model.Book;
+import com.bookstore.model.User;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -45,6 +46,10 @@ public class CatalogPanel extends JPanel {
     }
 
     public CatalogPanel() {
+        this(null);
+    }
+
+    public CatalogPanel(User user) {
 
         setLayout(new BorderLayout());
         setBackground(new Color(245, 240, 232));
@@ -106,33 +111,64 @@ public class CatalogPanel extends JPanel {
         scrollPane.getVerticalScrollBar().setValue(booksGrid.getY());
         }
      });
-        JButton registerBtn = new JButton("Register");
-        registerBtn.setBackground(new Color(139, 69, 19));
-        registerBtn.setForeground(Color.WHITE);
-        registerBtn.setFont(new Font("Arial", Font.PLAIN, 16));
-        registerBtn.setBorderPainted(false);
-        registerBtn.setFocusPainted(false);
-        registerBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        addHoverEffect(registerBtn, new Color(139, 69, 19), new Color(160, 82, 45));
 
         JPanel navRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 10));
         navRight.setBackground(Color.WHITE);
-        JLabel loginLink = new JLabel("Login");
-        loginLink.setFont(new Font("Arial", Font.PLAIN, 16));
-        loginLink.setForeground(new Color(85, 85, 85));
-        loginLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        addHoverEffectt(loginLink, new Color(139, 69, 19), new Color(85, 85, 85));
-        loginLink.addMouseListener(new java.awt.event.MouseAdapter() {
-      public void mouseClicked(java.awt.event.MouseEvent e) {
-         // LoginPanel login = new LoginPanel();
-      }
-   });
-        
-      
+
         navRight.add(homeLink);
         navRight.add(catalogLink);
-        navRight.add(loginLink);
-        navRight.add(registerBtn);
+
+        if (user != null) {
+            // USER IS LOGGED IN — show clickable username label
+            JLabel userLabel = new JLabel("👤 " + user.getName());
+            userLabel.setFont(new Font("Arial", Font.BOLD, 16));
+            userLabel.setForeground(new Color(139, 69, 19));
+            userLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            addHoverEffectt(userLabel, new Color(59, 31, 10), new Color(139, 69, 19));
+            userLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mouseClicked(java.awt.event.MouseEvent e) {
+                    // TODO: Member 4 — open OrderHistoryPanel or account menu here
+                    // Example: new OrderHistoryPanel(user).setVisible(true);
+                    JOptionPane.showMessageDialog(
+                        SwingUtilities.getWindowAncestor(CatalogPanel.this),
+                        "Hello, " + user.getName() + "!\nAccount panel coming soon.",
+                        "My Account",
+                        JOptionPane.INFORMATION_MESSAGE
+                    );
+                }
+            });
+            navRight.add(userLabel);
+        } else {
+            // NOT LOGGED IN — show Login link and Register button as before
+            JButton registerBtn = new JButton("Register");
+            registerBtn.setBackground(new Color(139, 69, 19));
+            registerBtn.setForeground(Color.WHITE);
+            registerBtn.setFont(new Font("Arial", Font.PLAIN, 16));
+            registerBtn.setBorderPainted(false);
+            registerBtn.setFocusPainted(false);
+            registerBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            addHoverEffect(registerBtn, new Color(139, 69, 19), new Color(160, 82, 45));
+            registerBtn.addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mouseClicked(java.awt.event.MouseEvent e) {
+                    SigninFrame reg = new SigninFrame();
+                }
+            });
+
+            JLabel loginLink = new JLabel("Login");
+            loginLink.setFont(new Font("Arial", Font.PLAIN, 16));
+            loginLink.setForeground(new Color(85, 85, 85));
+            loginLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            addHoverEffectt(loginLink, new Color(139, 69, 19), new Color(85, 85, 85));
+            loginLink.addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mouseClicked(java.awt.event.MouseEvent e) {
+                    LoginFrame login = new LoginFrame();
+                }
+            });
+
+            navRight.add(loginLink);
+            navRight.add(registerBtn);
+        }
+
         //ADD NAVBAR
         navbar.add(navLeft, BorderLayout.WEST);
         navbar.add(navRight, BorderLayout.EAST);
