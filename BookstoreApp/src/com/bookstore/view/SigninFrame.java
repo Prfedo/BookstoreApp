@@ -23,7 +23,7 @@ public class SigninFrame extends JFrame {
     public SigninFrame(Window owner) {
         userDAO = new UserDAO();
         setTitle("Sign Up");
-        setDefaultCloseOperation(owner != null ? DISPOSE_ON_CLOSE : EXIT_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(380, 600);
         setLocationRelativeTo(owner);
         setResizable(false);
