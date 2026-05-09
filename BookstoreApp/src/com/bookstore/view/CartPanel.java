@@ -171,15 +171,12 @@ public class CartPanel extends JPanel {
             }
         });
 
-        // [ADDED] backBtn action — navigates back to the shop.
-        // Passes SessionManager.currentUser to CatalogPanel so:
-        //   • If the user is logged in  → navbar shows their name + Logout button.
-        //   • If no one is logged in    → navbar shows Login + Register (guest mode).
-        // This prevents the bug where going back to the shop would reset the user
-        // to a logged-out state.
+        // [FIX - CART BUG] was: new CatalogPanel(SessionManager.currentUser)
+        // That created a brand-new CartController inside CatalogPanel, wiping all cart items.
+        // Now we pass the existing cartController so the cart survives navigating back.
         backBtn.addActionListener(e -> {
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-            CatalogPanel catalogPanel = new CatalogPanel(SessionManager.currentUser);
+            CatalogPanel catalogPanel = new CatalogPanel(SessionManager.currentUser, cartController);
             parentFrame.setContentPane(catalogPanel);
             parentFrame.revalidate();
             parentFrame.repaint();

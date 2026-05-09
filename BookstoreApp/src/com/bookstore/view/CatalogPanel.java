@@ -28,7 +28,7 @@ public class CatalogPanel extends JPanel {
     // [ADDED] CartController lives here so it is shared between the catalog,
     //         BookDetailDialog, and CartPanel — previously every "Add to Cart"
     //         click did nothing because no controller was wired in.
-    private CartController cartController = new CartController();
+    private CartController cartController;
 
     //hovercode
     private void addHoverEffect(JButton btn, Color normal, Color hover) {
@@ -56,11 +56,17 @@ public class CatalogPanel extends JPanel {
         });
     }
 
-    public CatalogPanel() {
-        this(null);
+     // [FIX 1] Original no-arg constructor — creates a fresh cart (app first launch)
+      public CatalogPanel() {
+        this(null, new CartController());
+      }
+      
+      public CatalogPanel(User user) {
+        this(user, new CartController());
     }
 
-    public CatalogPanel(User user) {
+    public CatalogPanel(User user, CartController cartController) {
+         this.cartController = cartController;
 
         setLayout(new BorderLayout());
         setBackground(new Color(245, 240, 232));
@@ -184,22 +190,24 @@ public class CatalogPanel extends JPanel {
                 parentFrame.revalidate();
                 parentFrame.repaint();
             });
-            JButton adminBtn = new JButton("Admin Panel");
-            adminBtn.setBackground(new Color(139, 69, 19));
-            adminBtn.setForeground(Color.WHITE);
-            adminBtn.setFont(new Font("Segoe UI Emoji", Font.BOLD, 14));
-            adminBtn.setBorderPainted(false);
-            adminBtn.setFocusPainted(false);
-            adminBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            addHoverEffect(adminBtn, new Color(139, 69, 19), new Color(160, 82, 45));
-            adminBtn.addActionListener(e -> {
-                JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(CatalogPanel.this);
-                AdminPanel adminPanel = new AdminPanel(user, parentFrame);
-                parentFrame.setContentPane(adminPanel);
-                parentFrame.revalidate();
-                parentFrame.repaint();
-            });
-            navRight.add(adminBtn);
+           if (user.isAdmin()) {
+                JButton adminBtn = new JButton("Admin Panel");
+                adminBtn.setBackground(new Color(139, 69, 19));
+                adminBtn.setForeground(Color.WHITE);
+                adminBtn.setFont(new Font("Segoe UI Emoji", Font.BOLD, 14));
+                adminBtn.setBorderPainted(false);
+                adminBtn.setFocusPainted(false);
+                adminBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                addHoverEffect(adminBtn, new Color(139, 69, 19), new Color(160, 82, 45));
+                adminBtn.addActionListener(e -> {
+                    JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(CatalogPanel.this);
+                    AdminPanel adminPanel = new AdminPanel(user, parentFrame);
+                    parentFrame.setContentPane(adminPanel);
+                    parentFrame.revalidate();
+                    parentFrame.repaint();
+                });
+                navRight.add(adminBtn);
+            }
 
             navRight.add(userLabel);
             navRight.add(logoutBtn); // [ADDED] logout sits right of the username
@@ -604,4 +612,4 @@ public class CatalogPanel extends JPanel {
         });
         return card;
     }
-}
+} 
