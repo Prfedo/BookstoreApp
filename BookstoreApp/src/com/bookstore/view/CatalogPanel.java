@@ -1,5 +1,10 @@
 package com.bookstore.view;
 
+import com.bookstore.model.SessionManager;
+// [ADDED] needed for My Orders nav link
+import com.bookstore.controller.CartController;
+// [ADDED] catalog must own the CartController instance
+
 import com.bookstore.database.BookDAO;
 import com.bookstore.model.Book;
 import com.bookstore.model.User;
@@ -11,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CatalogPanel extends JPanel {
+
     private JScrollPane scrollPane;
     private JPanel booksGrid;
     private JTextField searchField;
@@ -18,6 +24,11 @@ public class CatalogPanel extends JPanel {
     private final BookDAO bookDAO = new BookDAO();
     private List<Book> allBooks = new ArrayList<>();
     private final java.util.Map<String, ImageIcon> imageCache = new java.util.HashMap<>(); // FIX 2: cache
+
+    // [ADDED] CartController lives here so it is shared between the catalog,
+    //         BookDetailDialog, and CartPanel — previously every "Add to Cart"
+    //         click did nothing because no controller was wired in.
+    private CartController cartController = new CartController();
 
     //hovercode
     private void addHoverEffect(JButton btn, Color normal, Color hover) {
@@ -31,9 +42,9 @@ public class CatalogPanel extends JPanel {
             }
         });
     }
-    
+
     private void addHoverEffectt(JLabel btn, Color normal, Color hover) {
-        
+
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent e) {
                 btn.setForeground(normal);
@@ -70,7 +81,7 @@ public class CatalogPanel extends JPanel {
         JLabel logo = new JLabel("BOOKISH 🌸");
 
         logo.setFont(
-                new Font("Segoe UI Emoji", Font.BOLD,30));
+                new Font("Segoe UI Emoji", Font.BOLD, 30));
         logo.setForeground(
                 new Color(59, 31, 10));
 
@@ -87,81 +98,129 @@ public class CatalogPanel extends JPanel {
 
         //NAV LINKS(RIGHT)
         JLabel homeLink = new JLabel("Home");
-        
-        homeLink.setFont(new Font("Arial", Font.PLAIN, 16));
+
+        homeLink.setFont(new Font("Segoe UI Emoji", Font.BOLD, 16));
         homeLink.setForeground(new Color(85, 85, 85));
         homeLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
         homeLink.addMouseListener(new java.awt.event.MouseAdapter() {
-       public void mouseClicked(java.awt.event.MouseEvent e) {
-        scrollPane.getVerticalScrollBar().setValue(0);
-       }
-     });     
-       addHoverEffectt(homeLink, new Color(139, 69, 19), new Color(85, 85, 85));
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                scrollPane.getVerticalScrollBar().setValue(0);
+            }
+        });
+        addHoverEffectt(homeLink, new Color(139, 69, 19), new Color(85, 85, 85));
 
+        // [ADDED] Cart nav link — opens CartPanel inside the main window
+        JLabel cartLink = new JLabel("🛒 Cart");
+        cartLink.setFont(new Font("Segoe UI Emoji", Font.BOLD, 16));
+        cartLink.setForeground(new Color(85, 85, 85));
+        cartLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        addHoverEffectt(cartLink, new Color(139, 69, 19), new Color(85, 85, 85));
+        cartLink.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(CatalogPanel.this);
+                CartPanel cartPanel = new CartPanel(cartController);
+                parentFrame.setContentPane(cartPanel);
+                parentFrame.revalidate();
+                parentFrame.repaint();
+            }
+        });
 
         JLabel catalogLink = new JLabel("Collection");
-        
-        catalogLink.setFont(new Font("Arial", Font.PLAIN, 16));
+
+        catalogLink.setFont(new Font("Segoe UI Emoji", Font.BOLD, 16));
         catalogLink.setForeground(new Color(85, 85, 85));
         catalogLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
         addHoverEffectt(catalogLink, new Color(139, 69, 19), new Color(85, 85, 85));
         catalogLink.addMouseListener(new java.awt.event.MouseAdapter() {
-       public void mouseClicked(java.awt.event.MouseEvent e) {
-        booksGrid.scrollRectToVisible(booksGrid.getBounds());
-        scrollPane.getVerticalScrollBar().setValue(booksGrid.getY());
-        }
-     });
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                booksGrid.scrollRectToVisible(booksGrid.getBounds());
+                scrollPane.getVerticalScrollBar().setValue(booksGrid.getY());
+            }
+        });
 
         JPanel navRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 10));
         navRight.setBackground(Color.WHITE);
 
         navRight.add(homeLink);
         navRight.add(catalogLink);
+        navRight.add(cartLink);
 
         if (user != null) {
             // USER IS LOGGED IN — show clickable username label
             JLabel userLabel = new JLabel("👤 " + user.getName());
-            userLabel.setFont(new Font("Arial", Font.BOLD, 16));
+            userLabel.setFont(new Font("Segoe UI Emoji", Font.BOLD, 16));
             userLabel.setForeground(new Color(139, 69, 19));
             userLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
             addHoverEffectt(userLabel, new Color(59, 31, 10), new Color(139, 69, 19));
             userLabel.addMouseListener(new java.awt.event.MouseAdapter() {
                 public void mouseClicked(java.awt.event.MouseEvent e) {
-                    // TODO: Member 4 — open OrderHistoryPanel or account menu here
-                    // Example: new OrderHistoryPanel(user).setVisible(true);
-                    JOptionPane.showMessageDialog(
-                        SwingUtilities.getWindowAncestor(CatalogPanel.this),
-                        "Hello, " + user.getName() + "!\nAccount panel coming soon.",
-                        "My Account",
-                        JOptionPane.INFORMATION_MESSAGE
-                    );
+                    JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(CatalogPanel.this);
+                    // [FIXED] replaced JOptionPane stub with real OrderHistoryPanel navigation
+                    OrderHistoryPanel historyPanel = new OrderHistoryPanel(cartController);
+                    parentFrame.setContentPane(historyPanel);
+                    parentFrame.revalidate();
+                    parentFrame.repaint();
                 }
             });
+            // [ADDED] Logout button — did not exist before.
+            // When clicked it:
+            //   1. Sets SessionManager.currentUser to null (clears the session)
+            //   2. Replaces the content pane with a guest CatalogPanel(null)
+            //      so the window stays open but the user is now logged out,
+            //      and the navbar switches back to showing Login + Register.
+            JButton logoutBtn = new JButton("Logout");
+            logoutBtn.setBackground(new Color(139, 69, 19));
+            logoutBtn.setForeground(Color.WHITE);
+            logoutBtn.setFont(new Font("Segoe UI Emoji", Font.BOLD, 14));
+            logoutBtn.setBorderPainted(false);
+            logoutBtn.setFocusPainted(false);
+            logoutBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            addHoverEffect(logoutBtn, new Color(139, 69, 19), new Color(160, 82, 45));
+            logoutBtn.addActionListener(e -> {
+                SessionManager.currentUser = null; // clear global session
+                JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(CatalogPanel.this);
+                CatalogPanel guestPanel = new CatalogPanel(null); // rebuild as guest
+                parentFrame.setContentPane(guestPanel);
+                parentFrame.revalidate();
+                parentFrame.repaint();
+            });
+
             navRight.add(userLabel);
+            navRight.add(logoutBtn); // [ADDED] logout sits right of the username
         } else {
             // NOT LOGGED IN — show Login link and Register button as before
             JButton registerBtn = new JButton("Register");
             registerBtn.setBackground(new Color(139, 69, 19));
             registerBtn.setForeground(Color.WHITE);
-            registerBtn.setFont(new Font("Arial", Font.PLAIN, 16));
+            registerBtn.setFont(new Font("Segoe UI Emoji", Font.BOLD, 16));
             registerBtn.setBorderPainted(false);
             registerBtn.setFocusPainted(false);
             registerBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
             addHoverEffect(registerBtn, new Color(139, 69, 19), new Color(160, 82, 45));
-            registerBtn.addMouseListener(new java.awt.event.MouseAdapter() {
-                public void mouseClicked(java.awt.event.MouseEvent e) {
-                    SigninFrame reg = new SigninFrame();
-                }
+            registerBtn.addActionListener(e -> {
+                // [CHANGED] was: new SigninFrame();  (popup)
+                // Now: swaps content pane with SigninPanel (same window)
+                JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(CatalogPanel.this);
+                SigninPanel signinPanel = new SigninPanel(parentFrame);
+                parentFrame.setContentPane(signinPanel);
+                parentFrame.revalidate();
+                parentFrame.repaint();
             });
 
             JLabel loginLink = new JLabel("Login");
-            loginLink.setFont(new Font("Arial", Font.PLAIN, 16));
+            loginLink.setFont(new Font("Segoe UI Emoji", Font.BOLD, 16));
             loginLink.setForeground(new Color(85, 85, 85));
             loginLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
             addHoverEffectt(loginLink, new Color(139, 69, 19), new Color(85, 85, 85));
             loginLink.addMouseListener(new java.awt.event.MouseAdapter() {
                 public void mouseClicked(java.awt.event.MouseEvent e) {
-                    LoginFrame login = new LoginFrame();
+                    // [CHANGED] was: new LoginFrame();  (popup)
+                    // Now: swaps content pane with LoginPanel (same window)
+                    JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(CatalogPanel.this);
+                    LoginPanel loginPanel = new LoginPanel(parentFrame);
+                    parentFrame.setContentPane(loginPanel);
+                    parentFrame.revalidate();
+                    parentFrame.repaint();
                 }
             });
 
@@ -197,7 +256,7 @@ public class CatalogPanel extends JPanel {
 
         //to collection button
         JButton BB = new JButton("To Your New TBR");
-        
+
         BB.setBackground(new Color(139, 69, 19));
         BB.setForeground(Color.WHITE);
         BB.setFocusPainted(false);
@@ -205,10 +264,10 @@ public class CatalogPanel extends JPanel {
         BB.setFont(new Font("Arial", Font.BOLD, 14));
         BB.setCursor(new Cursor(Cursor.HAND_CURSOR));
         BB.addMouseListener(new java.awt.event.MouseAdapter() {
-       public void mouseClicked(java.awt.event.MouseEvent e) {
-        scrollPane.getVerticalScrollBar().setValue(booksGrid.getY());
-        }
-     });
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                scrollPane.getVerticalScrollBar().setValue(booksGrid.getY());
+            }
+        });
         addHoverEffect(BB, new Color(160, 82, 45), new Color(139, 69, 19));
         BB.setBounds(60, 150, 200, 40); // start LOWEST
 
@@ -217,7 +276,7 @@ public class CatalogPanel extends JPanel {
         heroPanel.add(desc);
         heroPanel.add(BB);
 
-         //SEARCH + GENRES + BOOKS all in one scrollable center panel
+        //SEARCH + GENRES + BOOKS all in one scrollable center panel
         JPanel centerPanel = new JPanel();
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         centerPanel.setBackground(new Color(245, 240, 232));
@@ -225,10 +284,25 @@ public class CatalogPanel extends JPanel {
         //ADD HERO
         centerPanel.add(heroPanel);
 
-       //SEARCH BAR
+        //SEARCH BAR
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 60, 10));
         searchPanel.setBackground(new Color(245, 240, 232));
-        searchField = new JTextField(30);
+        searchField = new JTextField(30) {
+            private final String placeholder = "Search for books...";
+
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (getText().isEmpty() && !isFocusOwner()) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setColor(new Color(180, 180, 180));
+                    g2.setFont(getFont().deriveFont(Font.ITALIC));
+                    Insets ins = getInsets();
+                    g2.drawString(placeholder, ins.left, getHeight() - ins.bottom - g2.getFontMetrics().getDescent());
+                    g2.dispose();
+                }
+            }
+        };
         searchField.setFont(new Font("Arial", Font.PLAIN, 14));
         searchField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(200, 200, 200), 1, true),
@@ -241,50 +315,60 @@ public class CatalogPanel extends JPanel {
                 filterBooks(text);
             }
         });
+        // repaint on focus so placeholder appears/disappears cleanly
+        searchField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent e) {
+                searchField.repaint();
+            }
+
+            public void focusLost(java.awt.event.FocusEvent e) {
+                searchField.repaint();
+            }
+        });
         centerPanel.add(searchPanel);
 
 // GENRE BUTTONS
         genrePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 60, 5));
         genrePanel.setBackground(new Color(245, 240, 232));
-        String[] genres = {"All", "Fantasy", "Self-Help", "Thriller", "Biography", "Science Fiction", "Fiction","Tech","Finance"};
+        String[] genres = {"All", "Fantasy", "Self-Help", "Thriller", "Biography", "Science Fiction", "Fiction", "Tech", "Finance"};
         for (String genre : genres) {
-    JButton genreBtn = new JButton(genre);
-    genreBtn.setFont(new Font("Arial", Font.PLAIN, 13));
-    genreBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-    genreBtn.setFocusPainted(false);
+            JButton genreBtn = new JButton(genre);
+            genreBtn.setFont(new Font("Arial", Font.PLAIN, 13));
+            genreBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            genreBtn.setFocusPainted(false);
 
-    if (genre.equals("All")) {
-        genreBtn.setBackground(new Color(139, 69, 19));
-        genreBtn.setForeground(Color.WHITE);
-        genreBtn.setBorderPainted(false);
-    } else {
-        genreBtn.setBackground(Color.WHITE);
-        genreBtn.setForeground(new Color(60, 60, 60));
-        genreBtn.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200), 1, true));
-    }
-
-    genreBtn.addActionListener(e -> {
-        currentGenre = genre;
-        filterBooks(searchField.getText());
-
-        // Reset all buttons style
-        for (Component c : genrePanel.getComponents()) {
-            if (c instanceof JButton) {
-                JButton b = (JButton) c;
-                if (b.getText().equals(genre)) {
-                    b.setBackground(new Color(139, 69, 19));
-                    b.setForeground(Color.WHITE);
-                    b.setBorderPainted (true);
-                } else {
-                    b.setBackground(Color.WHITE);
-                    b.setForeground(new Color(60, 60, 60));
-                    b.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200), 1, true));
-                }
+            if (genre.equals("All")) {
+                genreBtn.setBackground(new Color(139, 69, 19));
+                genreBtn.setForeground(Color.WHITE);
+                genreBtn.setBorderPainted(false);
+            } else {
+                genreBtn.setBackground(Color.WHITE);
+                genreBtn.setForeground(new Color(60, 60, 60));
+                genreBtn.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200), 1, true));
             }
+
+            genreBtn.addActionListener(e -> {
+                currentGenre = genre;
+                filterBooks(searchField.getText());
+
+                // Reset all buttons style
+                for (Component c : genrePanel.getComponents()) {
+                    if (c instanceof JButton) {
+                        JButton b = (JButton) c;
+                        if (b.getText().equals(genre)) {
+                            b.setBackground(new Color(139, 69, 19));
+                            b.setForeground(Color.WHITE);
+                            b.setBorderPainted(true);
+                        } else {
+                            b.setBackground(Color.WHITE);
+                            b.setForeground(new Color(60, 60, 60));
+                            b.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200), 1, true));
+                        }
+                    }
+                }
+            });
+            genrePanel.add(genreBtn);
         }
-    });
-    genrePanel.add(genreBtn);
-}
         centerPanel.add(genrePanel);
 
         // BOOKS GRID
@@ -305,138 +389,140 @@ public class CatalogPanel extends JPanel {
     }
     private String currentGenre = "All";
 
-   private void filterBooks(String searchText) {
-    String normalizedSearch = searchText == null ? "" : searchText.trim();
-    List<Book> source;
-    if (normalizedSearch.isEmpty()) {
-        source = allBooks;
-    } else {
-        source = searchBooksWithFallback(normalizedSearch);
-    }
-    List<Book> filtered = new ArrayList<>();
-    for (Book book : source) {
-        boolean matchesGenre = currentGenre.equals("All") || book.getGenre().equalsIgnoreCase(currentGenre);
-        if (matchesGenre) {
-            filtered.add(book);
+    private void filterBooks(String searchText) {
+        String normalizedSearch = searchText == null ? "" : searchText.trim();
+        List<Book> source;
+        if (normalizedSearch.isEmpty()) {
+            source = allBooks;
+        } else {
+            source = searchBooksWithFallback(normalizedSearch);
         }
-    }
-    renderBooks(filtered);
-}
-
-  private void loadBooks() {
-    try {
-        allBooks = bookDAO.getAllBooks();
-    } catch (SQLException e) {
-        allBooks = new ArrayList<>();
-    }
-  }
-
-  private List<Book> searchBooksWithFallback(String title) {
-    try {
-        return bookDAO.searchBooks(title);
-    } catch (Exception ignored) {
-        List<Book> fallback = new ArrayList<>();
-        for (Book book : allBooks) {
-            if (book.getTitle().toLowerCase().contains(title.toLowerCase())) {
-                fallback.add(book);
+        List<Book> filtered = new ArrayList<>();
+        for (Book book : source) {
+            boolean matchesGenre = currentGenre.equals("All") || book.getGenre().equalsIgnoreCase(currentGenre);
+            if (matchesGenre) {
+                filtered.add(book);
             }
         }
-        return fallback;
+        renderBooks(filtered);
     }
-  }
 
-  private void renderBooks(List<Book> books) {
-    booksGrid.removeAll();
-    for (Book book : books) {
-        booksGrid.add(createBookCard(book));
-    }
-    booksGrid.revalidate();
-    booksGrid.repaint();
-}
-
-  private JPanel createBookCard(Book book) {
-    JPanel card ,coverPanel,infoPanel;
-    JLabel coverLabel ,titleLabel,authorLabel;
-
-    card = new JPanel();
-    card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-    card.setBackground(Color.WHITE);
-    card.setBorder(BorderFactory.createLineBorder(new Color(100,100,100),1));
-
-    // COVER — FIX 2: use cache to avoid re-scaling on every filter
-    coverPanel = new JPanel(new BorderLayout());
-    coverPanel.setPreferredSize(new Dimension(350, 500));
-
-    ImageIcon cachedIcon = imageCache.computeIfAbsent(book.getCover(), key -> {
-        String normalized = key == null ? "" : key.replace("\\", "/");
-        String fileName = normalized.substring(normalized.lastIndexOf('/') + 1);
-        ImageIcon fileIcon = new ImageIcon("pics/books_cover/" + fileName);
-        if (fileIcon.getIconWidth() <= 0) {
-            return new ImageIcon(new BufferedImage(350, 500, BufferedImage.TYPE_INT_RGB));
+    private void loadBooks() {
+        try {
+            allBooks = bookDAO.getAllBooks();
+        } catch (SQLException e) {
+            allBooks = new ArrayList<>();
         }
-        Image scaled = fileIcon.getImage().getScaledInstance(350, 500, Image.SCALE_SMOOTH);
-        return new ImageIcon(scaled);
-    });
-
-    coverLabel = new JLabel(cachedIcon);
-    coverPanel.add(coverLabel, BorderLayout.CENTER);
-
-    titleLabel = new JLabel(book.getTitle());
-    titleLabel.setFont(new Font("Georgia", Font.BOLD, 13));
-    titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);   // CENTER
-
-    authorLabel = new JLabel(book.getAuthor());
-    authorLabel.setAlignmentX(Component.CENTER_ALIGNMENT);  // CENTER
-
-    infoPanel = new JPanel();
-    infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
-    infoPanel.setBackground(Color.WHITE);
-    infoPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 25, 10));
-    infoPanel.setPreferredSize(new Dimension(100, 85));
-
-    infoPanel.add(Box.createVerticalGlue()); // pushes content DOWN
-
-    infoPanel.add(titleLabel);
-    infoPanel.add(Box.createVerticalStrut(3));
-    infoPanel.add(authorLabel);
-
-    // FIX 1: add the missing footer with price + Add to Cart
-    JPanel footerPanel = new JPanel(new BorderLayout());
-    footerPanel.setBackground(Color.WHITE);
-    footerPanel.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
-
-    JLabel priceLabel = new JLabel(String.format("$%.2f", book.getPrice()));
-    priceLabel.setFont(new Font("Arial", Font.BOLD, 14));
-    priceLabel.setForeground(new Color(139, 69, 19));
-
-    JButton addbtn = new JButton("Add To Cart");
-    addbtn.setBackground(new Color(139, 69, 19));
-    addbtn.setForeground(Color.WHITE);
-    addbtn.setFont(new Font("Arial", Font.BOLD, 12));
-    addbtn.setBorderPainted(false);
-    addbtn.setFocusPainted(false);
-    addbtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-    addHoverEffect(addbtn, new Color(139, 69, 19), new Color(160, 82, 45));
-    addbtn.addActionListener(e -> {
-    JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(CatalogPanel.this);
-    BookDetailDialog dialog = new BookDetailDialog(parent, book);
-    dialog.setVisible(true);
-    });
-    footerPanel.add(priceLabel, BorderLayout.WEST);
-    footerPanel.add(addbtn, BorderLayout.EAST);
-
-    infoPanel.add(Box.createVerticalStrut(8));
-    infoPanel.add(footerPanel);
-
-    card.add(coverPanel);
-    card.add(infoPanel);
-    card.addMouseListener(new java.awt.event.MouseAdapter() {
-    public void mouseClicked(java.awt.event.MouseEvent e) {
-        JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(CatalogPanel.this);
-        BookDetailDialog dialog = new BookDetailDialog(parent, book);
-        dialog.setVisible(true);
     }
- });
-    return card;
- }
+
+    private List<Book> searchBooksWithFallback(String title) {
+        try {
+            return bookDAO.searchBooks(title);
+        } catch (Exception ignored) {
+            List<Book> fallback = new ArrayList<>();
+            for (Book book : allBooks) {
+                if (book.getTitle().toLowerCase().contains(title.toLowerCase())) {
+                    fallback.add(book);
+                }
+            }
+            return fallback;
+        }
+    }
+
+    private void renderBooks(List<Book> books) {
+        booksGrid.removeAll();
+        for (Book book : books) {
+            booksGrid.add(createBookCard(book));
+        }
+        booksGrid.revalidate();
+        booksGrid.repaint();
+    }
+
+    private JPanel createBookCard(Book book) {
+        JPanel card, coverPanel, infoPanel;
+        JLabel coverLabel, titleLabel, authorLabel;
+
+        card = new JPanel();
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createLineBorder(new Color(100, 100, 100), 1));
+
+        // COVER — FIX 2: use cache to avoid re-scaling on every filter
+        coverPanel = new JPanel(new BorderLayout());
+        coverPanel.setPreferredSize(new Dimension(350, 500));
+
+        ImageIcon cachedIcon = imageCache.computeIfAbsent(book.getCover(), key -> {
+            String normalized = key == null ? "" : key.replace("\\", "/");
+            String fileName = normalized.substring(normalized.lastIndexOf('/') + 1);
+            ImageIcon fileIcon = new ImageIcon("pics/books_cover/" + fileName);
+            if (fileIcon.getIconWidth() <= 0) {
+                return new ImageIcon(new BufferedImage(350, 500, BufferedImage.TYPE_INT_RGB));
+            }
+            Image scaled = fileIcon.getImage().getScaledInstance(350, 500, Image.SCALE_SMOOTH);
+            return new ImageIcon(scaled);
+        });
+
+        coverLabel = new JLabel(cachedIcon);
+        coverPanel.add(coverLabel, BorderLayout.CENTER);
+
+        titleLabel = new JLabel(book.getTitle());
+        titleLabel.setFont(new Font("Georgia", Font.BOLD, 13));
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);   // CENTER
+
+        authorLabel = new JLabel(book.getAuthor());
+        authorLabel.setAlignmentX(Component.CENTER_ALIGNMENT);  // CENTER
+
+        infoPanel = new JPanel();
+        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
+        infoPanel.setBackground(Color.WHITE);
+        infoPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 25, 10));
+        infoPanel.setPreferredSize(new Dimension(100, 85));
+
+        infoPanel.add(Box.createVerticalGlue()); // pushes content DOWN
+
+        infoPanel.add(titleLabel);
+        infoPanel.add(Box.createVerticalStrut(3));
+        infoPanel.add(authorLabel);
+
+        // FIX 1: add the missing footer with price + Add to Cart
+        JPanel footerPanel = new JPanel(new BorderLayout());
+        footerPanel.setBackground(Color.WHITE);
+        footerPanel.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
+
+        JLabel priceLabel = new JLabel(String.format("$%.2f", book.getPrice()));
+        priceLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        priceLabel.setForeground(new Color(139, 69, 19));
+
+        JButton addbtn = new JButton("Add To Cart");
+        addbtn.setBackground(new Color(139, 69, 19));
+        addbtn.setForeground(Color.WHITE);
+        addbtn.setFont(new Font("Arial", Font.BOLD, 12));
+        addbtn.setBorderPainted(false);
+        addbtn.setFocusPainted(false);
+        addbtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        addHoverEffect(addbtn, new Color(139, 69, 19), new Color(160, 82, 45));
+
+        addbtn.addActionListener(e -> {
+            JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(CatalogPanel.this);
+            BookDetailDialog dialog = new BookDetailDialog(parent, book, cartController);
+            dialog.setVisible(true);
+        });
+
+        footerPanel.add(priceLabel, BorderLayout.WEST);
+        footerPanel.add(addbtn, BorderLayout.EAST);
+
+        infoPanel.add(Box.createVerticalStrut(8));
+        infoPanel.add(footerPanel);
+
+        card.add(coverPanel);
+        card.add(infoPanel);
+        card.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(CatalogPanel.this);
+                BookDetailDialog dialog = new BookDetailDialog(parent, book, cartController);
+                dialog.setVisible(true);
+            }
+        });
+        return card;
+    }
 }

@@ -14,7 +14,11 @@ public class Order {
         this.userId = userId;
         this.items = items;
         this.date = date;
-        this.totalPrice = calculateTotal();
+        if (items.isEmpty()) {
+            this.totalPrice = totalPrice;
+        } else {
+            this.totalPrice = calculateTotal();
+        }
     }
 
     private double calculateTotal() {

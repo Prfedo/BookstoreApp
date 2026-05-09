@@ -39,6 +39,7 @@ public class OrderDAO {
         List<Order> orders = new ArrayList<>();
         while (rs.next()) {
             //    public Order(int id, int userId, List<CartItem> items, String date) {
+            //i return empty list bec i dont need the detailed of card item
 
             Order order = new Order(rs.getInt("ID"), rs.getInt("user_id"), new ArrayList<>(), rs.getDouble("total_price"), rs.getString("created_at"));
             orders.add(order);

@@ -1,44 +1,51 @@
 package com.bookstore.view;
 
+// [NEW FILE] LoginPanel.java
+// Why it was created:
+//   The original login was done through LoginFrame.java, which extended JFrame
+//   and opened a brand-new popup window every time the user clicked "Login".
+//   That meant two windows were open at the same time (the main bookstore window
+//   + the login popup), which is what the user wanted to fix.
+//
+//   LoginPanel extends JPanel instead of JFrame.
+//   CatalogPanel now swaps the main window's content pane to this panel,
+//   so login happens inside the same single window — no popup ever appears.
+//
+//   LoginFrame.java is left untouched in the project because removing it would
+//   require changing other files that might reference it. It is simply no longer
+//   called by CatalogPanel.
+
 import com.bookstore.database.UserDAO;
 import com.bookstore.model.User;
+import com.bookstore.model.SessionManager;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class LoginFrame extends JFrame {
+public class LoginPanel extends JPanel {
 
-    static final Color BG = new Color(109, 76, 65);
+    // [SAME colours as LoginFrame so the look is identical]
+    static final Color BG     = new Color(109, 76, 65);
     static final Color ACCENT = new Color(62, 39, 35);
-    static final Color TEXT = new Color(30, 30, 40);
+    static final Color TEXT   = new Color(30, 30, 40);
     static final Color SUBTLE = new Color(120, 120, 140);
+
     private final UserDAO userDAO;
 
-        public LoginFrame() {
-        this(null);
-    }
-    
-    public LoginFrame(Window owner) {
-        userDAO = new UserDAO();
-        setTitle("Login");
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setSize(380, 460);
-        setLocationRelativeTo(owner);
-        setResizable(false);
-        getContentPane().setBackground(BG);
-        setLayout(new GridBagLayout());
+    // [ADDED] parentFrame reference — needed so we can swap the content pane
+    // after a successful login or when the user clicks "Sign up" link.
+    private final JFrame parentFrame;
+
+    public LoginPanel(JFrame parentFrame) {
+        this.parentFrame = parentFrame;
+        this.userDAO = new UserDAO();
+
+        // [SAME] background colour and centred card layout as LoginFrame
+        setBackground(BG);
+        setLayout(new GridBagLayout()); // GridBagLayout centres the card
         add(buildCard());
-        //App icon
-        try {
-            ImageIcon icon = new ImageIcon("pics/Appicon.jpg");
-            Image img = icon.getImage().getScaledInstance(50,50, Image.SCALE_SMOOTH);
-            setIconImage(img);
-        } catch (Exception e) {
-            System.out.println("Icon error: " + e.getMessage());
-        }
-        setVisible(true);
     }
 
     private JPanel buildCard() {
@@ -49,8 +56,11 @@ public class LoginFrame extends JFrame {
                 new LineBorder(new Color(220, 220, 235), 1, true),
                 new EmptyBorder(40, 40, 40, 40)
         ));
+        // fixed size so the card looks the same as the old LoginFrame
+        card.setMaximumSize(new Dimension(380, 460));
+        card.setPreferredSize(new Dimension(380, 460));
 
-        // Title
+        // ── form fields (same as LoginFrame) ────────────────────────────────
         JLabel title = new JLabel("Welcome Back");
         title.setFont(new Font("SansSerif", Font.BOLD, 22));
         title.setForeground(TEXT);
@@ -61,12 +71,11 @@ public class LoginFrame extends JFrame {
         sub.setForeground(SUBTLE);
         sub.setAlignmentX(LEFT_ALIGNMENT);
 
-        // Fields
         JTextField usernameField = styledField();
         JPasswordField passwordField = new JPasswordField();
         styleField(passwordField);
 
-        // Button
+        // ── Sign In button ───────────────────────────────────────────────────
         JButton loginBtn = new JButton("Sign In");
         loginBtn.setAlignmentX(LEFT_ALIGNMENT);
         loginBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
@@ -77,52 +86,53 @@ public class LoginFrame extends JFrame {
         loginBtn.setBorderPainted(false);
         loginBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         loginBtn.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                loginBtn.setBackground(new Color(109, 76, 65));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                loginBtn.setBackground(ACCENT);
-            }
+            public void mouseEntered(MouseEvent e) { loginBtn.setBackground(new Color(109, 76, 65)); }
+            public void mouseExited(MouseEvent e)  { loginBtn.setBackground(ACCENT); }
         });
         loginBtn.addActionListener(e -> {
             String u = usernameField.getText().trim();
             String p = new String(passwordField.getPassword());
             if (u.isEmpty() || p.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Please enter your username/email and password.",
+                JOptionPane.showMessageDialog(parentFrame,
+                        "Please enter your username/email and password.",
                         "Notice", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-
             User user = userDAO.login(u, p);
             if (user != null) {
-                JOptionPane.showMessageDialog(this, "Welcome, " + user.getName() + "!");
-                MainWindow window = new MainWindow(user); // pass logged-in user
-                window.setVisible(true);
-                dispose();
+                // [CHANGED vs LoginFrame] LoginFrame opened a new MainWindow(user).
+                // Now: set the session and swap the content pane to a logged-in
+                // CatalogPanel — the window never changes, only its contents do.
+                SessionManager.currentUser = user;
+                CatalogPanel catalogPanel = new CatalogPanel(user);
+                parentFrame.setContentPane(catalogPanel);
+                parentFrame.revalidate();
+                parentFrame.repaint();
             } else {
-                JOptionPane.showMessageDialog(this, "Invalid username or password.",
+                JOptionPane.showMessageDialog(parentFrame,
+                        "Invalid username or password.",
                         "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
-        // Footer
+        // ── "Don't have an account?" footer link ─────────────────────────────
         JLabel footer = new JLabel("Don't have an account? Sign up");
         footer.setFont(new Font("SansSerif", Font.PLAIN, 12));
         footer.setForeground(ACCENT);
         footer.setAlignmentX(LEFT_ALIGNMENT);
         footer.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         footer.addMouseListener(new MouseAdapter() {
-            @Override
             public void mouseClicked(MouseEvent e) {
-                new SigninFrame();
-                dispose();
+                // [CHANGED vs LoginFrame] LoginFrame called new SigninFrame() (popup).
+                // Now: swap to SigninPanel in the same window.
+                SigninPanel signinPanel = new SigninPanel(parentFrame);
+                parentFrame.setContentPane(signinPanel);
+                parentFrame.revalidate();
+                parentFrame.repaint();
             }
         });
 
-        // Assemble
+        // ── assemble card (same order as LoginFrame) ─────────────────────────
         card.add(title);
         card.add(Box.createVerticalStrut(6));
         card.add(sub);
@@ -142,13 +152,14 @@ public class LoginFrame extends JFrame {
         return card;
     }
 
-    private JLabel makeLabel(String m) {
-        JLabel L = new JLabel(m);
-        L.setFont(new Font("SansSerif", Font.BOLD, 12));
-        L.setForeground(SUBTLE);
-        L.setMaximumSize(new Dimension(Integer.MAX_VALUE, 20));
-        L.setAlignmentX(LEFT_ALIGNMENT);
-        return L;
+    // ── helpers (same style as LoginFrame) ──────────────────────────────────
+    private JLabel makeLabel(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(new Font("SansSerif", Font.BOLD, 12));
+        lbl.setForeground(SUBTLE);
+        lbl.setMaximumSize(new Dimension(Integer.MAX_VALUE, 20));
+        lbl.setAlignmentX(LEFT_ALIGNMENT);
+        return lbl;
     }
 
     private JTextField styledField() {
@@ -174,5 +185,4 @@ public class LoginFrame extends JFrame {
         ));
         f.setAlignmentX(LEFT_ALIGNMENT);
     }
-
 }
