@@ -184,6 +184,21 @@ public class CatalogPanel extends JPanel {
                 parentFrame.revalidate();
                 parentFrame.repaint();
             });
+            JButton adminBtn = new JButton("Admin Panel");
+            adminBtn.setBackground(new Color(139, 69, 19));
+            adminBtn.setForeground(Color.WHITE);
+            adminBtn.setFont(new Font("Segoe UI Emoji", Font.BOLD, 14));
+            adminBtn.setBorderPainted(false);
+            adminBtn.setFocusPainted(false);
+            adminBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            adminBtn.addActionListener(e -> {
+                JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(CatalogPanel.this);
+                AdminPanel adminPanel = new AdminPanel(user, parentFrame);
+                parentFrame.setContentPane(adminPanel);
+                parentFrame.revalidate();
+                parentFrame.repaint();
+            });
+            navRight.add(adminBtn);
 
             navRight.add(userLabel);
             navRight.add(logoutBtn); // [ADDED] logout sits right of the username
