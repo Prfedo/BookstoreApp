@@ -191,6 +191,7 @@ public class CatalogPanel extends JPanel {
             adminBtn.setBorderPainted(false);
             adminBtn.setFocusPainted(false);
             adminBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            addHoverEffect(adminBtn, new Color(139, 69, 19), new Color(160, 82, 45));
             adminBtn.addActionListener(e -> {
                 JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(CatalogPanel.this);
                 AdminPanel adminPanel = new AdminPanel(user, parentFrame);
