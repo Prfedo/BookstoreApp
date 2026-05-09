@@ -121,8 +121,8 @@ public class AdminPanel extends JPanel {
         tableTitle.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
 
         // Refresh button below table
-        JButton refreshBtn = styledButton("🗘 Refresh Table");
-        JButton deleteBtn  = styledButton("🗑  Delete Selected");
+        JButton refreshBtn = styledButton("🔄 Refresh Table");
+        JButton deleteBtn  = styledButton("🗑️  Delete Selected");
         JPanel tableActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 8));
         tableActions.setBackground(BEIGE);
         tableActions.add(deleteBtn);
@@ -221,7 +221,7 @@ public class AdminPanel extends JPanel {
         lbl.setAlignmentX(LEFT_ALIGNMENT);
 
         JLabel desc = new JLabel("<html>" + description + "</html>");
-        desc.setFont(new Font("Arial", Font.PLAIN, 11));
+        desc.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 11));
         desc.setForeground(new Color(140, 120, 100));
         desc.setAlignmentX(LEFT_ALIGNMENT);
 
