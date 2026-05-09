@@ -109,8 +109,40 @@ public class AdminPanel extends JPanel {
         booksTable.getColumnModel().getColumn(6).setPreferredWidth(140);  // Cover
 
         JScrollPane tableScroll = new JScrollPane(booksTable);
-        tableScroll.setBorder(new LineBorder(new Color(210, 195, 180), 1));
-        tableScroll.getViewport().setBackground(WHITE);
+        tableScroll.setBorder(null);
+        tableScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
+        JScrollBar vBar = tableScroll.getVerticalScrollBar();
+        vBar.setUnitIncrement(16);
+        vBar.setPreferredSize(new Dimension(6, 0));
+        vBar.setUI(new javax.swing.plaf.basic.BasicScrollBarUI() {
+            @Override protected void configureScrollBarColors() {
+                thumbColor = new Color(139, 69, 19);
+                trackColor = new Color(245, 240, 232);
+            }
+            @Override protected JButton createDecreaseButton(int o) { return zeroButton(); }
+            @Override protected JButton createIncreaseButton(int o) { return zeroButton(); }
+            private JButton zeroButton() {
+                JButton b = new JButton();
+                b.setPreferredSize(new Dimension(0, 0));
+                b.setMinimumSize(new Dimension(0, 0));
+                b.setMaximumSize(new Dimension(0, 0));
+                return b;
+            }
+            @Override protected void paintThumb(Graphics g, JComponent c, Rectangle r) {
+                if (r.isEmpty()) return;
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(thumbColor);
+                g2.fillRoundRect(r.x + 1, r.y, r.width - 2, r.height, 6, 6);
+                g2.dispose();
+            }
+            @Override protected void paintTrack(Graphics g, JComponent c, Rectangle r) {
+                g.setColor(trackColor);
+                g.fillRect(r.x, r.y, r.width, r.height);
+            }
+        });
+        add(tableScroll, BorderLayout.CENTER);
 
         JPanel tableWrapper = new JPanel(new BorderLayout());
         tableWrapper.setBackground(BEIGE);

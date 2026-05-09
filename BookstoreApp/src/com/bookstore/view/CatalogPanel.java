@@ -343,42 +343,74 @@ public class CatalogPanel extends JPanel {
         });
         centerPanel.add(searchPanel);
 
-// GENRE BUTTONS
-        genrePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 60, 5));
+    // GENRE BUTTONS
+    genrePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
         genrePanel.setBackground(new Color(245, 240, 232));
+        genrePanel.setBorder(BorderFactory.createEmptyBorder(0, 52, 0, 52));
+
         String[] genres = {"All", "Fantasy", "Self-Help", "Thriller", "Biography", "Science Fiction", "Fiction", "Tech", "Finance"};
+
         for (String genre : genres) {
-            JButton genreBtn = new JButton(genre);
+            JButton genreBtn = new JButton(genre) {
+                @Override protected void paintComponent(Graphics g) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setColor(getBackground());
+                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), getHeight(), getHeight());
+                    g2.dispose();
+                    super.paintComponent(g);
+                }
+                @Override protected void paintBorder(Graphics g) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    if (!getBackground().equals(new Color(139, 69, 19))) {
+                        g2.setColor(new Color(180, 155, 130));
+                        g2.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, getHeight(), getHeight());
+                    }
+                    g2.dispose();
+                }
+            };
+            genreBtn.setOpaque(false);
+            genreBtn.setContentAreaFilled(false);
             genreBtn.setFont(new Font("Arial", Font.PLAIN, 13));
             genreBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
             genreBtn.setFocusPainted(false);
+            genreBtn.setBorderPainted(false);
+            genreBtn.setMargin(new Insets(6, 16, 6, 16));
 
             if (genre.equals("All")) {
                 genreBtn.setBackground(new Color(139, 69, 19));
                 genreBtn.setForeground(Color.WHITE);
-                genreBtn.setBorderPainted(false);
             } else {
-                genreBtn.setBackground(Color.WHITE);
-                genreBtn.setForeground(new Color(60, 60, 60));
-                genreBtn.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200), 1, true));
+                genreBtn.setBackground(new Color(245, 240, 232));
+                genreBtn.setForeground(new Color(80, 50, 20));
             }
+
+            genreBtn.addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mouseEntered(java.awt.event.MouseEvent e) {
+                    if (!genreBtn.getBackground().equals(new Color(139, 69, 19))) {
+                        genreBtn.setBackground(new Color(230, 218, 200));
+                    }
+                }
+                public void mouseExited(java.awt.event.MouseEvent e) {
+                    if (!genreBtn.getBackground().equals(new Color(139, 69, 19))) {
+                        genreBtn.setBackground(new Color(245, 240, 232));
+                    }
+                }
+            });
 
             genreBtn.addActionListener(e -> {
                 currentGenre = genre;
                 filterBooks(searchField.getText());
-
-                // Reset all buttons style
                 for (Component c : genrePanel.getComponents()) {
                     if (c instanceof JButton) {
                         JButton b = (JButton) c;
                         if (b.getText().equals(genre)) {
                             b.setBackground(new Color(139, 69, 19));
                             b.setForeground(Color.WHITE);
-                            b.setBorderPainted(true);
                         } else {
-                            b.setBackground(Color.WHITE);
-                            b.setForeground(new Color(60, 60, 60));
-                            b.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200), 1, true));
+                            b.setBackground(new Color(245, 240, 232));
+                            b.setForeground(new Color(80, 50, 20));
                         }
                     }
                 }
@@ -386,7 +418,6 @@ public class CatalogPanel extends JPanel {
             genrePanel.add(genreBtn);
         }
         centerPanel.add(genrePanel);
-
         // BOOKS GRID
         booksGrid = new JPanel(new GridLayout(0, 4, 16, 16));
         booksGrid.setBackground(new Color(245, 240, 232));
@@ -400,8 +431,40 @@ public class CatalogPanel extends JPanel {
         // MAKE IT SCROLLABLE
         scrollPane = new JScrollPane(centerPanel);
         scrollPane.setBorder(null);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
+        JScrollBar vBar = scrollPane.getVerticalScrollBar();
+        vBar.setUnitIncrement(16);
+        vBar.setPreferredSize(new Dimension(6, 0));
+        vBar.setUI(new javax.swing.plaf.basic.BasicScrollBarUI() {
+            @Override protected void configureScrollBarColors() {
+                thumbColor = new Color(139, 69, 19);
+                trackColor = new Color(245, 240, 232);
+            }
+            @Override protected JButton createDecreaseButton(int o) { return zeroButton(); }
+            @Override protected JButton createIncreaseButton(int o) { return zeroButton(); }
+            private JButton zeroButton() {
+                JButton b = new JButton();
+                b.setPreferredSize(new Dimension(0, 0));
+                b.setMinimumSize(new Dimension(0, 0));
+                b.setMaximumSize(new Dimension(0, 0));
+                return b;
+            }
+            @Override protected void paintThumb(Graphics g, JComponent c, Rectangle r) {
+                if (r.isEmpty()) return;
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(thumbColor);
+                g2.fillRoundRect(r.x + 1, r.y, r.width - 2, r.height, 6, 6);
+                g2.dispose();
+            }
+            @Override protected void paintTrack(Graphics g, JComponent c, Rectangle r) {
+                g.setColor(trackColor);
+                g.fillRect(r.x, r.y, r.width, r.height);
+            }
+        });
         add(scrollPane, BorderLayout.CENTER);
+
     }
     private String currentGenre = "All";
 
