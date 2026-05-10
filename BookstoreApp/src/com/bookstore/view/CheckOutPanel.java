@@ -11,23 +11,14 @@ package com.bookstore.view;
 import com.bookstore.model.SessionManager;
 
 import com.bookstore.controller.CartController;
-
 import com.bookstore.database.OrderDAO;
-
 import com.bookstore.model.Order;
-
 import javax.swing.*;
-
 import java.awt.*;
-
 import java.time.LocalDate;
-
 import com.bookstore.model.CartItem;
-
 import javax.swing.table.DefaultTableModel;
-
 import java.util.List;
-
 import java.util.ArrayList;
 
 public class CheckOutPanel extends JPanel {
@@ -309,16 +300,16 @@ paymentBox.addActionListener(e -> {
             if (!validateFields()) return;
 
 
-            // NOTE FOR MEMBER 5:
+          // NOTE FOR MEMBER 5:
           // When login is implemented, SessionManager.currentUser will hold the logged-in user
-           // Remove the else block below and keep only:
+          // Remove the else block below and keep only:
           // int userId = SessionManager.currentUser.getId();
           int userId;
            if (SessionManager.currentUser != null) {
             userId = SessionManager.currentUser.getId();
            } 
            else {
-                 userId = 1; // TEMPORARY  remove when login is done
+                 userId = 2; // TEMPORARY  remove when login is done
                 }
 
 
