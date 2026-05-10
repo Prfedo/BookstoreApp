@@ -1,18 +1,5 @@
 package com.bookstore.view;
 
-// [NEW FILE] SigninPanel.java
-// Why it was created:
-//   The original registration was handled by SigninFrame.java, which extended
-//   JFrame and opened a separate popup window.  That caused two windows to be
-//   open at once, which is what the user wanted to fix.
-//
-//   SigninPanel extends JPanel instead of JFrame.
-//   CatalogPanel now swaps the main window's content pane to this panel,
-//   so registration happens inside the same single window.
-//
-//   SigninFrame.java is left untouched in the project; it is simply no longer
-//   called by CatalogPanel.
-
 import com.bookstore.database.UserDAO;
 import com.bookstore.model.User;
 import com.bookstore.model.SessionManager;
@@ -24,7 +11,7 @@ import java.awt.event.MouseEvent;
 
 public class SigninPanel extends JPanel {
 
-    // [SAME colours as SigninFrame so the look is identical]
+
     static final Color BG     = new Color(109, 76, 65);
     static final Color ACCENT = new Color(62, 39, 35);
     static final Color TEXT   = new Color(30, 30, 40);
@@ -32,18 +19,67 @@ public class SigninPanel extends JPanel {
 
     private final UserDAO userDAO;
 
-    // [ADDED] parentFrame reference — needed so we can swap the content pane
-    // after a successful registration or when the user clicks "Sign in" link.
+
     private final JFrame parentFrame;
 
     public SigninPanel(JFrame parentFrame) {
         this.parentFrame = parentFrame;
         this.userDAO = new UserDAO();
 
-        // [SAME] background colour and centred card layout as SigninFrame
+
         setBackground(BG);
-        setLayout(new GridBagLayout()); // GridBagLayout centres the card
-        add(buildCard());
+        setLayout(new BorderLayout());
+        JPanel topBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 20));
+        topBar.setBackground(BG);
+
+
+
+        JLabel backBtn = new JLabel("← Back");
+        backBtn.setFont(new Font("SansSerif", Font.BOLD, 15));
+        backBtn.setForeground(new Color(255, 220, 180));   // warm cream
+        backBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        backBtn.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+
+        backBtn.addMouseListener(new MouseAdapter() {
+            @Override public void mouseEntered(MouseEvent e) {
+                backBtn.setForeground(Color.WHITE);
+            }
+            @Override public void mouseExited(MouseEvent e) {
+                backBtn.setForeground(new Color(255, 220, 180));
+            }
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+                backBtn.setEnabled(false);
+                
+                new SwingWorker<CatalogPanel, Void>() {
+                    @Override
+                    protected CatalogPanel doInBackground() {
+                        return new CatalogPanel(SessionManager.currentUser);
+                    }
+                    @Override
+                    protected void done() {
+                        try {
+                            CatalogPanel catalogPanel = get();
+                            parentFrame.setContentPane(catalogPanel);
+                            parentFrame.revalidate();
+                            parentFrame.repaint();
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            backBtn.setEnabled(true); // re-enable on error
+                        }
+                    }
+                }.execute();
+            }
+        });
+        topBar.add(backBtn);
+
+        JPanel centerWrap = new JPanel(new GridBagLayout());
+        centerWrap.setBackground(BG);
+        centerWrap.add(buildCard());
+
+        add(topBar, BorderLayout.NORTH);
+        add(centerWrap, BorderLayout.CENTER);
     }
 
     private JPanel buildCard() {
@@ -54,11 +90,10 @@ public class SigninPanel extends JPanel {
                 new LineBorder(new Color(220, 220, 235), 1, true),
                 new EmptyBorder(40, 40, 40, 40)
         ));
-        // fixed size so the card looks the same as the old SigninFrame
+
         card.setMaximumSize(new Dimension(380, 600));
         card.setPreferredSize(new Dimension(380, 600));
 
-        // ── form fields (same as SigninFrame) ────────────────────────────────
         JLabel title = new JLabel("Create Account");
         title.setFont(new Font("SansSerif", Font.BOLD, 22));
         title.setForeground(TEXT);
@@ -71,7 +106,6 @@ public class SigninPanel extends JPanel {
         JPasswordField passwordField = new JPasswordField();
         styleField(passwordField);
 
-        // ── Create Account button ────────────────────────────────────────────
         JButton signUpBtn = new JButton("Create Account");
         signUpBtn.setAlignmentX(LEFT_ALIGNMENT);
         signUpBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
@@ -86,7 +120,6 @@ public class SigninPanel extends JPanel {
             public void mouseExited(MouseEvent e)  { signUpBtn.setBackground(ACCENT); }
         });
         signUpBtn.addActionListener(e -> {
-            // [SAME validation as SigninFrame]
             String name = nameField.getText().trim();
             String u    = usernameField.getText().trim();
             String em   = emailField.getText().trim();
@@ -114,9 +147,6 @@ public class SigninPanel extends JPanel {
                 JOptionPane.showMessageDialog(parentFrame,
                         "Account created! Welcome, " + name + "!",
                         "Success", JOptionPane.INFORMATION_MESSAGE);
-                // [CHANGED vs SigninFrame] SigninFrame opened a new MainWindow(user).
-                // Now: set the session and swap the content pane to a logged-in
-                // CatalogPanel — same window, no popup.
                 User user = userDAO.login(u, p);
                 SessionManager.currentUser = user;
                 CatalogPanel catalogPanel = new CatalogPanel(user);
@@ -130,7 +160,6 @@ public class SigninPanel extends JPanel {
             }
         });
 
-        // ── "Already have an account?" footer link ───────────────────────────
         JLabel footer = new JLabel("Already have an account? Sign in");
         footer.setFont(new Font("SansSerif", Font.PLAIN, 12));
         footer.setForeground(ACCENT);
@@ -139,8 +168,7 @@ public class SigninPanel extends JPanel {
         footer.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         footer.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                // [CHANGED vs SigninFrame] SigninFrame called new LoginFrame() (popup).
-                // Now: swap to LoginPanel in the same window.
+
                 LoginPanel loginPanel = new LoginPanel(parentFrame);
                 parentFrame.setContentPane(loginPanel);
                 parentFrame.revalidate();
@@ -148,7 +176,6 @@ public class SigninPanel extends JPanel {
             }
         });
 
-        // ── assemble card (same order as SigninFrame) ─────────────────────────
         card.add(title);
         card.add(Box.createVerticalStrut(30));
         card.add(makeLabel("Name"));
@@ -174,7 +201,6 @@ public class SigninPanel extends JPanel {
         return card;
     }
 
-    // ── helpers (same style as SigninFrame) ──────────────────────────────────
     private JLabel makeLabel(String text) {
         JLabel lbl = new JLabel(text);
         lbl.setFont(new Font("SansSerif", Font.BOLD, 12));
