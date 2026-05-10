@@ -152,7 +152,7 @@ public class CartPanel extends JPanel {
         totalLabel.setText("Total: " + String.format("$%.2f", cartController.getTotal()));
     }
 
-    // ── button actions ────────────────────────────────────────────────────────
+    // ── button actions ──────────────────────────────────────────────────────
     private void ButtonActions() {
 
         // [UNCHANGED] remove selected row
