@@ -56,17 +56,17 @@ public class CatalogPanel extends JPanel {
         });
     }
 
-     // [FIX 1] Original no-arg constructor — creates a fresh cart (app first launch)
-      public CatalogPanel() {
+    // [FIX 1] Original no-arg constructor — creates a fresh cart (app first launch)
+    public CatalogPanel() {
         this(null, new CartController());
-      }
-      
-      public CatalogPanel(User user) {
+    }
+
+    public CatalogPanel(User user) {
         this(user, new CartController());
     }
 
     public CatalogPanel(User user, CartController cartController) {
-         this.cartController = cartController;
+        this.cartController = cartController;
 
         setLayout(new BorderLayout());
         setBackground(new Color(245, 240, 232));
@@ -190,7 +190,7 @@ public class CatalogPanel extends JPanel {
                 parentFrame.revalidate();
                 parentFrame.repaint();
             });
-           if (user.isAdmin()) {
+            if (user.isAdmin()) {
                 JButton adminBtn = new JButton("Admin Panel");
                 adminBtn.setBackground(new Color(139, 69, 19));
                 adminBtn.setForeground(Color.WHITE);
@@ -261,7 +261,7 @@ public class CatalogPanel extends JPanel {
         //the hero panel(its called like ts)
         JPanel heroPanel = new JPanel(null);//to animate the text
         heroPanel.setBackground(new Color(245, 240, 232)); // coloring the background
-        heroPanel.setPreferredSize(new Dimension(1000, 250)); //sizw
+        heroPanel.setPreferredSize(new Dimension(1000, 270)); //sizw
 
         //quote
         JLabel qu = new JLabel("Books You'll Actually Finish");
@@ -270,22 +270,25 @@ public class CatalogPanel extends JPanel {
         qu.setBounds(60, 25, 800, 50); // start LOW
 
         //discrption
+        //discrption
         JLabel desc = new JLabel(
-                "<html>From learning to legends — dive into educational books, page-turning thrillers,"
-                + "<br>uplifting self-help, and immersive fantasy worlds.</html>"
+                "<html>"
+                + "From learning to legends — explore a world of educational reads, page-turning thrillers,<br>"
+                + "uplifting self-help, and magical fantasy adventures,<br>"
+                + "where every page sparks curiosity, growth, and imagination."
+                + "</html>"
         );
-        desc.setFont(new Font("Arial", Font.PLAIN, 16));
+        desc.setFont(new Font("Georgia", Font.BOLD, 22));
         desc.setForeground(new Color(100, 100, 100));
-        desc.setBounds(60, 90, 600, 50); // start LOWER
+        desc.setBounds(60, 60, 950, 150);
 
         //to collection button
         JButton BB = new JButton("To Your New TBR");
-
         BB.setBackground(new Color(139, 69, 19));
         BB.setForeground(Color.WHITE);
         BB.setFocusPainted(false);
         BB.setBorderPainted(false);
-        BB.setFont(new Font("Arial", Font.BOLD, 14));
+        BB.setFont(new Font("Georgia", Font.BOLD, 14));
         BB.setCursor(new Cursor(Cursor.HAND_CURSOR));
         BB.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -293,7 +296,7 @@ public class CatalogPanel extends JPanel {
             }
         });
         addHoverEffect(BB, new Color(160, 82, 45), new Color(139, 69, 19));
-        BB.setBounds(60, 150, 200, 40); // start LOWEST
+        BB.setBounds(60, 215, 200, 40); // start LOWEST
 
         // ADD TO PANEL
         heroPanel.add(qu);
@@ -327,7 +330,7 @@ public class CatalogPanel extends JPanel {
                 }
             }
         };
-        searchField.setFont(new Font("Arial", Font.PLAIN, 14));
+        searchField.setFont(new Font("Georgia", Font.PLAIN, 14));
         searchField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(200, 200, 200), 1, true),
                 BorderFactory.createEmptyBorder(8, 16, 8, 16)
@@ -351,8 +354,8 @@ public class CatalogPanel extends JPanel {
         });
         centerPanel.add(searchPanel);
 
-    // GENRE BUTTONS
-    genrePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
+        // GENRE BUTTONS
+        genrePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
         genrePanel.setBackground(new Color(245, 240, 232));
         genrePanel.setBorder(BorderFactory.createEmptyBorder(0, 52, 0, 52));
 
@@ -360,7 +363,8 @@ public class CatalogPanel extends JPanel {
 
         for (String genre : genres) {
             JButton genreBtn = new JButton(genre) {
-                @Override protected void paintComponent(Graphics g) {
+                @Override
+                protected void paintComponent(Graphics g) {
                     Graphics2D g2 = (Graphics2D) g.create();
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                     g2.setColor(getBackground());
@@ -368,12 +372,14 @@ public class CatalogPanel extends JPanel {
                     g2.dispose();
                     super.paintComponent(g);
                 }
-                @Override protected void paintBorder(Graphics g) {
+
+                @Override
+                protected void paintBorder(Graphics g) {
                     Graphics2D g2 = (Graphics2D) g.create();
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                     if (!getBackground().equals(new Color(139, 69, 19))) {
                         g2.setColor(new Color(180, 155, 130));
-                        g2.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, getHeight(), getHeight());
+                        g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, getHeight(), getHeight());
                     }
                     g2.dispose();
                 }
@@ -400,6 +406,7 @@ public class CatalogPanel extends JPanel {
                         genreBtn.setBackground(new Color(230, 218, 200));
                     }
                 }
+
                 public void mouseExited(java.awt.event.MouseEvent e) {
                     if (!genreBtn.getBackground().equals(new Color(139, 69, 19))) {
                         genreBtn.setBackground(new Color(245, 240, 232));
@@ -445,12 +452,22 @@ public class CatalogPanel extends JPanel {
         vBar.setUnitIncrement(16);
         vBar.setPreferredSize(new Dimension(6, 0));
         vBar.setUI(new javax.swing.plaf.basic.BasicScrollBarUI() {
-            @Override protected void configureScrollBarColors() {
+            @Override
+            protected void configureScrollBarColors() {
                 thumbColor = new Color(139, 69, 19);
                 trackColor = new Color(245, 240, 232);
             }
-            @Override protected JButton createDecreaseButton(int o) { return zeroButton(); }
-            @Override protected JButton createIncreaseButton(int o) { return zeroButton(); }
+
+            @Override
+            protected JButton createDecreaseButton(int o) {
+                return zeroButton();
+            }
+
+            @Override
+            protected JButton createIncreaseButton(int o) {
+                return zeroButton();
+            }
+
             private JButton zeroButton() {
                 JButton b = new JButton();
                 b.setPreferredSize(new Dimension(0, 0));
@@ -458,15 +475,21 @@ public class CatalogPanel extends JPanel {
                 b.setMaximumSize(new Dimension(0, 0));
                 return b;
             }
-            @Override protected void paintThumb(Graphics g, JComponent c, Rectangle r) {
-                if (r.isEmpty()) return;
+
+            @Override
+            protected void paintThumb(Graphics g, JComponent c, Rectangle r) {
+                if (r.isEmpty()) {
+                    return;
+                }
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(thumbColor);
                 g2.fillRoundRect(r.x + 1, r.y, r.width - 2, r.height, 6, 6);
                 g2.dispose();
             }
-            @Override protected void paintTrack(Graphics g, JComponent c, Rectangle r) {
+
+            @Override
+            protected void paintTrack(Graphics g, JComponent c, Rectangle r) {
                 g.setColor(trackColor);
                 g.fillRect(r.x, r.y, r.width, r.height);
             }
@@ -612,4 +635,4 @@ public class CatalogPanel extends JPanel {
         });
         return card;
     }
-} 
+}
