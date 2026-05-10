@@ -27,6 +27,12 @@ public class OrderDAO {
             CartItem item = order.getItems().get(i);
             String itemQuery = "insert into Order_item (order_id, book_id, quantity, price) values (" + orderId + "," + item.getBook().getId() + "," + item.getQuantity() + "," + item.getSubtotal() + ")";
             ss.execute(itemQuery);
+            
+            String stockQuery = "UPDATE Books SET Stock = MAX(Stock - "
+                    + item.getQuantity() + ", 0)"
+                    + " WHERE ID = " + item.getBook().getId();
+            ss.execute(stockQuery);
+        
         }
         DatabaseManager.closeAll(c, ss, rs);
     }

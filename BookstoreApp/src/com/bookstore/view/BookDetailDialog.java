@@ -65,7 +65,15 @@ public class BookDetailDialog extends JDialog {
         JLabel qtyLabel = new JLabel("Quantity:");
         qtyLabel.setFont(new Font("Arial", Font.PLAIN, 14));
 
-        SpinnerNumberModel spinnerModel = new SpinnerNumberModel(1, 1, 99, 1);
+        int maxQty;
+
+        if (book != null) {
+            maxQty = book.getStock();
+        } else {
+            maxQty = 99;
+        }
+        
+        SpinnerNumberModel spinnerModel = new SpinnerNumberModel(1, 1, maxQty, 1);
         JSpinner qtySpinner = new JSpinner(spinnerModel);
         qtySpinner.setFont(new Font("Arial", Font.PLAIN, 14));
         qtySpinner.setPreferredSize(new Dimension(60, 30));
