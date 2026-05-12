@@ -1,161 +1,192 @@
-# Bookstore App
+# Bookish — Desktop Bookstore App
 
-A desktop bookstore management and shopping application built with **Java Swing** and **SQLite**.
+A desktop bookstore application built with **Java Swing** and **SQLite** for a team university project.
 
-This project is designed as a team-based university project with clear module ownership (models, database, UI, cart/orders, and authentication/admin), then integrated into one working desktop app.
+![App Screenshot](BookstoreApp/pics/screenshot.png)
 
 ---
 
 ## Team Members
 
-- Malak Medhat
-- Habiba Ahmed
-- Marwan Mohamed
-- Esmail Mohamed
-- Bassel Saeed
+| # | Name | Role | Key files |
+|---|------|------|-----------|
+| 1 | Esmail Mohamed | Team lead + models | `Main.java`, `Book.java`, `User.java`, `Order.java`, `CartItem.java`, `SessionManager.java` |
+| 2 | Malak Medhat | Database layer | `DatabaseManager.java`, `BookDAO.java`, `UserDAO.java`, `OrderDAO.java`, `ConnectSQL.java` |
+| 3 | Habiba Ahmed | Book catalog UI | `MainWindow.java`, `CatalogPanel.java`, `BookDetailDialog.java` |
+| 4 | Bassel Saeed | Cart, checkout & orders UI | `CartPanel.java`, `CheckOutPanel.java`, `OrderConfirmDialogue.java`, `OrderHistoryPanel.java` |
+| 5 | Marwan Mohamed | Login, register & admin | `LoginPanel.java`, `SigninPanel.java`, `AdminPanel.java` |
 
 ---
 
-## Overview
+## Features
 
-Bookstore App provides a modern catalog interface with searchable books, category filtering, user management, and order persistence through SQLite.
+### Shopping
 
-### Current Highlights
+- Book catalog with cover images, titles, authors, genres, and prices
+- Live search by title and genre filter controls
+- Book detail dialog with quantity capped by stock
+- Shopping cart: add, remove, and clear
 
-- Responsive desktop UI built with Swing
-- Book catalog with:
-  - live title search
-  - genre filtering
-  - book detail dialog
-- SQLite-backed data layer with DAO pattern:
-  - `BookDAO`
-  - `UserDAO`
-  - `OrderDAO`
-- Automatic table initialization on app startup
-- Local image-based branding and cover rendering
+### Checkout
+
+- Delivery details with validation
+- Cash on delivery, credit card, and debit card options
+- Card number and CVV field limits
+- Order confirmation with line items
+- Per-user order history
+
+### Authentication
+
+- Registration: name, username, email, password
+- Login with **username or email**
+- Session handling while navigating
+- Logout
+
+### Admin panel
+
+- Full book inventory table
+- Add books with validation
+- Delete books with confirmation
+- Stock decreases when orders are placed
 
 ---
 
-## Project Structure
+## Architecture
+
+Four-tier style: **Swing UI → controllers → DAOs → SQLite**.
 
 ```text
-BookstoreApp/
-├── src/
-│   ├── Main.java
-│   └── com/bookstore/
-│       ├── controller/
-│       ├── database/
-│           ├── JDBC SQLite/
-│               └── sqlite-jdbc-3.51.3.0.jar
-│       ├── model/
-│       └── view/
-├── pics/
-│   ├── ICON.png
-│   ├── Appicon.jpg
-│   └── books_cover/
-├── bookstore.db
-└── README.md
+View (Swing panels)
+  ↔
+Controller
+  ↔
+DAO (SQL)
+  ↔
+SQLite
 ```
 
 ---
 
-## Technology Stack
+## Repository layout
 
-- **Language:** Java
-- **UI Framework:** Java Swing
-- **Database:** SQLite
-- **Database Access:** JDBC (`sqlite-jdbc`)
-- **Build/IDE:** NetBeans (Ant project)
+The git root contains this README and a **NetBeans project folder** (open the inner folder in the IDE).
+
+```text
+BookstoreApp/                          ← git repository root
+├── README.md
+└── BookstoreApp/                      ← open this directory in NetBeans
+    ├── src/
+    │   ├── Main.java
+    │   └── com/bookstore/
+    │       ├── model/
+    │       │   ├── Book.java
+    │       │   ├── User.java
+    │       │   ├── Order.java
+    │       │   ├── CartItem.java
+    │       │   └── SessionManager.java
+    │       ├── database/
+    │       │   ├── ConnectSQL.java
+    │       │   ├── DatabaseManager.java
+    │       │   ├── BookDAO.java
+    │       │   ├── UserDAO.java
+    │       │   ├── OrderDAO.java
+    │       │   └── JDBC SQLite/
+    │       │       └── sqlite-jdbc-3.51.3.0.jar
+    │       ├── controller/
+    │       │   ├── BookController.java
+    │       │   ├── CartController.java
+    │       │   ├── UserController.java
+    │       │   └── OrderController.java
+    │       └── view/
+    │           ├── MainWindow.java
+    │           ├── CatalogPanel.java
+    │           ├── BookDetailDialog.java
+    │           ├── CartPanel.java
+    │           ├── CheckOutPanel.java
+    │           ├── OrderConfirmDialogue.java
+    │           ├── OrderHistoryPanel.java
+    │           ├── LoginPanel.java
+    │           ├── SigninPanel.java
+    │           └── AdminPanel.java
+    ├── pics/
+    │   ├── ICON.png
+    │   ├── Appicon.jpg
+    │   └── books_cover/
+    ├── bookstore.db                    ← created at runtime (see .gitignore)
+    ├── build.xml
+    └── nbproject/
+```
+
+Paths like `pics/...` are resolved from the **process working directory** (usually the NetBeans project folder above), so keep the `pics` folder next to `src` as shown.
 
 ---
 
-## Core Modules
+## Database schema
 
-### 1) Model Layer
+Tables are created on startup (see `DatabaseManager`).
 
-Contains the main domain entities:
-
-- `Book`
-- `User`
-- `Order`
-- `CartItem`
-
-### 2) Database Layer
-
-Located in `src/com/bookstore/database/`:
-
-- `ConnectSQL` - database connection provider
-- `DatabaseManager` - table creation and SQL resource cleanup
-- `BookDAO` - book CRUD + search
-- `UserDAO` - registration, login, and user lookup
-- `OrderDAO` - order persistence and order history retrieval
-
-### 3) View Layer
-
-Located in `src/com/bookstore/view/`:
-
-- `MainWindow` - application frame
-- `CatalogPanel` - catalog browsing, filtering, and details dialog
-- `BookDetailDialog` - selected book details + add-to-cart interaction
+| Table | Main columns |
+|-------|----------------|
+| `Books` | `ID`, `Title`, `Author`, `Genre`, `Price`, `Stock`, `Cover` |
+| `Users` | `ID`, `Name`, `username`, `email`, `password`, `is_admin` |
+| `Orders` | `ID`, `user_id`, `total_price`, `created_at` |
+| `Order_item` | `ID`, `order_id`, `book_id`, `quantity`, `price` |
 
 ---
 
-## Getting Started
+## Getting started
 
 ### Prerequisites
 
-- Java JDK (recommended: Java 17+)
-- NetBeans IDE (recommended for this project structure)
-- SQLite JDBC driver jar in `JDBC SQLite/`
+- **JDK** — Java 17 or newer (this repo’s NetBeans metadata may target a newer release; check `BookstoreApp/nbproject/project.properties` for `javac.source` / `javac.target` and match your installed JDK or adjust in the IDE)
+- **NetBeans** (recommended) with Ant
+- **SQLite JDBC** — referenced from  
+  `BookstoreApp/src/com/bookstore/database/JDBC SQLite/sqlite-jdbc-3.51.3.0.jar`  
+  Ensure that file exists and is on the project classpath (already wired in `project.properties`).
 
-### Run in NetBeans
+### Run the app
 
-1. Open the project folder in NetBeans.
-2. Ensure SQLite JDBC library is available in project libraries.
-3. Run `Main.java`.
+1. Open **`BookstoreApp/BookstoreApp`** in NetBeans (the inner project folder).
+2. Confirm the SQLite JDBC `.jar` is listed under **Libraries**.  
+   If the project fails to compile on your machine, open **Project Properties → Libraries** and remove any teammate-specific absolute paths (see `nbproject/project.properties`).
+3. Run **`Main.java`**. Tables are created on first launch; `bookstore.db` appears in the working directory (typically the project folder).
 
-On startup, the app calls `DatabaseManager.createTabels()` to make sure required tables exist.
+### Create an admin account
 
----
+1. Register a user in the app.
+2. Open `bookstore.db` in any SQLite tool and run:
 
-## Database Notes
+   ```sql
+   UPDATE Users SET is_admin = 1 WHERE email = 'your@email.com';
+   ```
 
-- Default SQLite file: `bookstore.db`
-- Main tables:
-  - `Books`
-  - `Users`
-  - `Orders`
-  - `Order_item`
-
-Book cover paths are resolved from filenames and displayed from:
-
-`pics/books_cover/`
+3. Restart the app and sign in — the **Admin** entry in the UI becomes available.
 
 ---
 
-## Team Workflow (Recommended)
+## Tech stack
 
-- Use feature branches (`member2-database`, `member3-catalog`, etc.)
-- Keep commits focused and descriptive
-- Open PRs for review before merging to `main`
-- Avoid committing generated files (`build/`, `.class`, IDE private metadata)
+| Technology | Role |
+|------------|------|
+| Java | Application language |
+| Java Swing | Desktop UI |
+| SQLite | Embedded database |
+| JDBC (`sqlite-jdbc`) | Driver |
+| NetBeans / Ant | IDE and build |
 
 ---
 
-## Known Warnings
+## Notes
 
-You may see this runtime warning with recent Java versions:
-
-`System::load has been called by org.sqlite.SQLiteJDBCLoader ...`
-
-This is a Java native-access warning from SQLite JDBC and does not block normal execution.
-
-Optional VM argument to silence it:
-
-`--enable-native-access=ALL-UNNAMED`
+- **Java 17+ native-access warning** — you may see:
+  `System::load has been called by org.sqlite.SQLiteJDBCLoader...`  
+  It is usually harmless. To silence it, add the VM option:
+  `--enable-native-access=ALL-UNNAMED`
+- **Passwords** are stored in plain text — demo / coursework only.
+- **SQL** in DAOs uses string concatenation — not suitable for production or exposed services.
 
 ---
 
 ## License
 
-This project is developed for educational purposes.
+Educational use — university team project.

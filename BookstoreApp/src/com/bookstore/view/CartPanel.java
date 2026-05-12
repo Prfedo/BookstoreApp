@@ -2,8 +2,6 @@ package com.bookstore.view;
 
 import com.bookstore.controller.CartController;
 import com.bookstore.model.CartItem;
-// [ADDED] import — needed so backBtn can read SessionManager.currentUser
-// and pass it to CatalogPanel so the navbar stays logged-in after navigating back.
 import com.bookstore.model.SessionManager;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -19,10 +17,6 @@ public class CartPanel extends JPanel {
     private JTable cartTable;
     private DefaultTableModel tableModel;
     private JLabel totalLabel;
-
-    // [CHANGED] Added backBtn to the field list.
-    // Previously: private JButton removeBtn, clearBtn, checkoutBtn;
-    // Now:        private JButton removeBtn, clearBtn, checkoutBtn, backBtn;
     private JButton removeBtn, clearBtn, checkoutBtn, backBtn;
 
     private CartController cartController;
@@ -33,14 +27,12 @@ public class CartPanel extends JPanel {
         this.setLayout(new BorderLayout());
         this.setBackground(Beige);
 
-        // ── title (unchanged) ────────────────────────────────────────────────
         JLabel title = new JLabel("Your Cart");
         title.setFont(new Font("Georgia", Font.BOLD, 22));
         title.setForeground(DARK_BROWN);
         title.setBorder(BorderFactory.createEmptyBorder(20, 30, 10, 30));
         this.add(title, BorderLayout.NORTH);
 
-        // ── table (unchanged) ─────────────────────────────────────────────────
         String[] columns = {"Title", "Author", "Qty", "Subtotal"};
         tableModel = new DefaultTableModel(columns, 0) {
             public boolean isCellEditable(int r, int c) { return false; }
@@ -61,7 +53,6 @@ public class CartPanel extends JPanel {
         scrollPane.getViewport().setBackground(Beige);
         this.add(scrollPane, BorderLayout.CENTER);
 
-        // ── bottom panel ──────────────────────────────────────────────────────
         JPanel bottomPanel = new JPanel(new BorderLayout());
         bottomPanel.setBackground(Beige);
         bottomPanel.setBorder(BorderFactory.createEmptyBorder(15, 30, 20, 30));
@@ -76,26 +67,18 @@ public class CartPanel extends JPanel {
             }
         });
 
-        // [CHANGED] totalLabel moved from WEST to the same WEST position but
-        // the old layout had:  WEST=totalLabel | EAST=btnPanel
-        // The new layout keeps WEST=totalLabel | EAST=btnPanel unchanged,
-        // but Back to Shop is now INSIDE btnPanel (see below) instead of having
-        // its own separate westPanel wrapper — so the total stays on the left
-        // and all buttons are grouped on the right.
+        
         totalLabel = new JLabel("Total: $0.00");
         totalLabel.setFont(new Font("Georgia", Font.BOLD, 16));
         totalLabel.setForeground(DARK_BROWN);
 
-        // ── button panel ──────────────────────────────────────────────────────
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         btnPanel.setBackground(Beige);
 
         removeBtn   = StyleButtons("Remove Selected");
 
-        // [ADDED] backBtn — was missing entirely in the original CartPanel.
-        // It is placed between "Remove Selected" and "Clear Cart" so the
         // left-to-right order reads: Remove | ← Back to Shop | Clear Cart | Checkout
-        // The ← arrow (\u2190) is a Unicode left-arrow so no font changes are needed.
+        // The ← arrow (\u2190) is a Unicode left-arrow no font changes are needed.
         backBtn     = StyleButtons("\u2190 Back to Shop");
 
         clearBtn    = StyleButtons("Clear Cart");
@@ -106,7 +89,6 @@ public class CartPanel extends JPanel {
         btnPanel.add(checkoutBtn);
         btnPanel.add(backBtn);  // [ADDED] sits right after Remove, before Clear
 
-        // [UNCHANGED] total on left, buttons on right
         bottomPanel.add(totalLabel, BorderLayout.WEST);
         bottomPanel.add(btnPanel,   BorderLayout.EAST);
         this.add(bottomPanel, BorderLayout.SOUTH);
@@ -115,7 +97,6 @@ public class CartPanel extends JPanel {
         refreshTable();
     }
 
-    // ── style helpers (unchanged) ─────────────────────────────────────────────
     private JButton StyleButtons(String text) {
         JButton btn = new JButton(text);
         btn.setBackground(BROWN);
@@ -136,7 +117,6 @@ public class CartPanel extends JPanel {
         });
     }
 
-    // ── table refresh (unchanged) ─────────────────────────────────────────────
     public void refreshTable() {
         tableModel.setRowCount(0);
         List<CartItem> items = cartController.getCartItems();
@@ -152,10 +132,8 @@ public class CartPanel extends JPanel {
         totalLabel.setText("Total: " + String.format("$%.2f", cartController.getTotal()));
     }
 
-    // ── button actions ──────────────────────────────────────────────────────
     private void ButtonActions() {
 
-        // [UNCHANGED] remove selected row
         removeBtn.addActionListener(e -> {
             int row = cartTable.getSelectedRow();
             if (row == -1) {
@@ -171,8 +149,7 @@ public class CartPanel extends JPanel {
             }
         });
 
-        // [FIX - CART BUG] was: new CatalogPanel(SessionManager.currentUser)
-        // That created a brand-new CartController inside CatalogPanel, wiping all cart items.
+        // new CatalogPanel(SessionManager.currentUser)
         // Now we pass the existing cartController so the cart survives navigating back.
         backBtn.addActionListener(e -> {
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
@@ -182,7 +159,6 @@ public class CartPanel extends JPanel {
             parentFrame.repaint();
         });
 
-        // [UNCHANGED] clear all cart items
         clearBtn.addActionListener(e -> {
             int confirm = JOptionPane.showConfirmDialog(this,
                     "Clear entire cart?", "Confirm", JOptionPane.YES_NO_OPTION);
@@ -192,7 +168,6 @@ public class CartPanel extends JPanel {
             }
         });
 
-        // [UNCHANGED] navigate to checkout
         checkoutBtn.addActionListener(e -> {
             if (cartController.getCartItems().isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Your cart is empty!");

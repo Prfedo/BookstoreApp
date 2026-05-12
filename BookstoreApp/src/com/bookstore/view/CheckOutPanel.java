@@ -302,14 +302,12 @@ paymentBox.addActionListener(e -> {
 
           // NOTE FOR MEMBER 5:
           // When login is implemented, SessionManager.currentUser will hold the logged-in user
-          // Remove the else block below and keep only:
-          // int userId = SessionManager.currentUser.getId();
           int userId;
            if (SessionManager.currentUser != null) {
             userId = SessionManager.currentUser.getId();
            } 
            else {
-                 userId = 2; // TEMPORARY  remove when login is done
+                 userId = 2; // For guest usage 
                 }
 
 

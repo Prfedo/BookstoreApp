@@ -35,7 +35,6 @@ public class OrderConfirmDialogue extends JDialog {
         getContentPane().setBackground(Beige);
         setLayout(new BorderLayout());
 
-        // NORTH — success title
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
         topPanel.setBackground(Beige);
@@ -64,7 +63,6 @@ public class OrderConfirmDialogue extends JDialog {
 
         this.add(topPanel, BorderLayout.NORTH);
 
-        // CENTER — items table
         JPanel centerPanel = new JPanel();
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         centerPanel.setBackground(Beige);
@@ -120,7 +118,6 @@ public class OrderConfirmDialogue extends JDialog {
 
         this.add(centerPanel, BorderLayout.CENTER);
 
-        // SOUTH — close button
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         bottomPanel.setBackground(Beige);
         bottomPanel.setBorder(BorderFactory.createEmptyBorder(5, 30, 20, 30));
