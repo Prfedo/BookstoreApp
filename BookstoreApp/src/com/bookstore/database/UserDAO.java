@@ -3,6 +3,7 @@ package com.bookstore.database;
 import com.bookstore.model.User;
 import java.sql.*;
 
+//User Data Accses Object
 public class UserDAO {
 
     ConnectSQL db = new ConnectSQL();
@@ -32,7 +33,6 @@ public class UserDAO {
             String query = "select * from Users where ( email='" + emailOrUsername + "' OR username='" + emailOrUsername + "') and password ='" + passwordd + "'";
             rs = ss.executeQuery(query);
             if (rs.next()) {
-                //int id, String name, String email, String password, boolean isAdmin)
                 User user = new User(rs.getInt("ID"), rs.getString("Name"), rs.getString("username"),
                         rs.getString("email"), rs.getString("password"),
                         rs.getBoolean("is_admin"));
@@ -62,7 +62,6 @@ public class UserDAO {
                         rs.getString("email"), rs.getString("password"),
                         rs.getBoolean("is_admin"));
                 return user;
-                //System.out.println("Name: " + rs.getString("name"));
             } else {
                 System.out.println("Not Found");
                 return null;
@@ -71,6 +70,25 @@ public class UserDAO {
             System.out.println("Error in gerUserById: " + ee.getMessage());
             return null;
         } finally {
+            DatabaseManager.closeAll(r, ss, rs);
+        }
+    }
+
+    public boolean deleteUser(String username) {
+        PreparedStatement ps = null;
+        try {
+            r = db.connectSQLite();
+
+            ps = r.prepareStatement("DELETE FROM Users WHERE username = ?");
+            ps.setString(1, username);
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+
+        } catch (SQLException ee) {
+            System.out.println("Error in deleteUser: " + ee.getMessage());
+            return false;
+        } finally {
+            try { if (ps != null) ps.close(); } catch (SQLException ignored) {}
             DatabaseManager.closeAll(r, ss, rs);
         }
     }

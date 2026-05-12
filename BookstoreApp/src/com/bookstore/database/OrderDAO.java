@@ -19,7 +19,8 @@ public class OrderDAO {
         ss = c.createStatement();
         String query = "insert into Orders (user_id, total_price, created_at) values ( " + order.getUserId() + "," + order.getTotalPrice() + ",'" + order.getDate() + "')";
         ss.execute(query);
-        // Step 2: get the auto-generated id SQLite just gave it
+
+        //after sql gernate id for order i put it in the order item table 
         rs = ss.executeQuery("select last_insert_rowid() as id");
         int orderId = rs.getInt("id");
 
@@ -28,11 +29,9 @@ public class OrderDAO {
             String itemQuery = "insert into Order_item (order_id, book_id, quantity, price) values (" + orderId + "," + item.getBook().getId() + "," + item.getQuantity() + "," + item.getSubtotal() + ")";
             ss.execute(itemQuery);
             
-            String stockQuery = "UPDATE Books SET Stock = MAX(Stock - "
-                    + item.getQuantity() + ", 0)"
-                    + " WHERE ID = " + item.getBook().getId();
+            // dec stock 
+            String stockQuery = "UPDATE Books SET Stock = MAX( Stock - " + item.getQuantity() + ", 0)" + " WHERE ID = " + item.getBook().getId();
             ss.execute(stockQuery);
-        
         }
         DatabaseManager.closeAll(c, ss, rs);
     }
@@ -44,9 +43,7 @@ public class OrderDAO {
         rs = ss.executeQuery(query);
         List<Order> orders = new ArrayList<>();
         while (rs.next()) {
-            //    public Order(int id, int userId, List<CartItem> items, String date) {
             //i return empty list bec i dont need the detailed of card item
-
             Order order = new Order(rs.getInt("ID"), rs.getInt("user_id"), new ArrayList<>(), rs.getDouble("total_price"), rs.getString("created_at"));
             orders.add(order);
         }

@@ -10,12 +10,8 @@ package com.bookstore.model;
  */
 
 public class SessionManager {
+    //mange who is loged in right now
     public static User currentUser = null;
-
-    // NOTE FOR MEMBER 5:
-    // After successful login in LoginPanel, add this one line:
-    // SessionManager.currentUser = loggedInUser;
-    // Where loggedInUser is the User object returned by UserDAO.login()
     
 }
 

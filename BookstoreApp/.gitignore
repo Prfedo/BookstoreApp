@@ -4,6 +4,9 @@
 *.class
 *.log
 
+# Local SQLite data (working directory when you run the app)
+bookstore.db
+
 # NetBeans temporary markers
 .netbeans_automatic_build
 .netbeans_update_resources

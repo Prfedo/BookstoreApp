@@ -1,6 +1,7 @@
 package com.bookstore.view;
 
 import com.bookstore.database.BookDAO;
+import com.bookstore.database.UserDAO;
 import com.bookstore.model.Book;
 import com.bookstore.model.User;
 import java.awt.*;
@@ -14,19 +15,22 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 public class AdminPanel extends JPanel {
 
-    // ── palette (matches the rest of the app) ────────────────────────────────
     private static final Color BEIGE      = new Color(245, 240, 232);
     private static final Color BROWN      = new Color(139, 69, 19);
     private static final Color BROWN_HOV  = new Color(160, 82, 45);
     private static final Color DARK_BROWN = new Color(59, 31, 10);
     private static final Color WHITE      = Color.WHITE;
+    private static final Color CARD_BORDER = new Color(210, 195, 180);
+    private static final Color DANGER     = new Color(180, 50, 50);
+    private static final Color DANGER_HOV = new Color(200, 70, 70);
 
     private final User adminUser;
     private final BookDAO bookDAO = new BookDAO();
+    private final UserDAO userDAO = new UserDAO();
     private final DefaultTableModel tableModel;
     private final JTable booksTable;
 
-    // form fields
+    
     private final JTextField titleField;
     private final JTextField authorField;
     private final JTextField genreField;
@@ -34,12 +38,15 @@ public class AdminPanel extends JPanel {
     private final JTextField stockField;
     private final JTextField coverField;
 
+   
+    private final JTextField deleteUsernameField;
+
     public AdminPanel(User adminUser, JFrame parentFrame) {
         this.adminUser = adminUser;
         setLayout(new BorderLayout());
         setBackground(BEIGE);
 
-        // ── TOP NAVBAR ────────────────────────────────────────────────────────
+        
         JPanel navbar = new JPanel(new BorderLayout());
         navbar.setBackground(WHITE);
         navbar.setBorder(BorderFactory.createEmptyBorder(14, 28, 14, 28));
@@ -52,7 +59,7 @@ public class AdminPanel extends JPanel {
         adminLabel.setFont(new Font("Segoe UI Emoji", Font.BOLD, 14));
         adminLabel.setForeground(BROWN);
 
-        JButton backBtn = styledButton("← Back to Shop");
+        JButton backBtn = styledButton("← Back to Shop", BROWN, BROWN_HOV);
         backBtn.addActionListener(e -> {
             CatalogPanel catalogPanel = new CatalogPanel(adminUser);
             parentFrame.setContentPane(catalogPanel);
@@ -69,12 +76,12 @@ public class AdminPanel extends JPanel {
         navbar.add(navRight, BorderLayout.EAST);
         add(navbar, BorderLayout.NORTH);
 
-        // ── MAIN CONTENT: table (left) + form (right) ─────────────────────────
-        JPanel contentPanel = new JPanel(new BorderLayout(16, 0));
+        
+        JPanel contentPanel = new JPanel(new BorderLayout(20, 0));
         contentPanel.setBackground(BEIGE);
         contentPanel.setBorder(BorderFactory.createEmptyBorder(20, 28, 20, 28));
 
-        // ── BOOK TABLE ────────────────────────────────────────────────────────
+        
         tableModel = new DefaultTableModel(
                 new Object[]{"ID", "Title", "Author", "Genre", "Price", "Stock", "Cover"}, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
@@ -93,36 +100,235 @@ public class AdminPanel extends JPanel {
         booksTable.getTableHeader().setReorderingAllowed(false);
         booksTable.getTableHeader().setResizingAllowed(false);
 
-        // center-align all cells
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
         for (int i = 0; i < booksTable.getColumnCount(); i++) {
             booksTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
-        // column widths
-        booksTable.getColumnModel().getColumn(0).setPreferredWidth(35);   // ID
-        booksTable.getColumnModel().getColumn(1).setPreferredWidth(160);  // Title
-        booksTable.getColumnModel().getColumn(2).setPreferredWidth(120);  // Author
-        booksTable.getColumnModel().getColumn(3).setPreferredWidth(90);   // Genre
-        booksTable.getColumnModel().getColumn(4).setPreferredWidth(60);   // Price
-        booksTable.getColumnModel().getColumn(5).setPreferredWidth(50);   // Stock
-        booksTable.getColumnModel().getColumn(6).setPreferredWidth(140);  // Cover
+        booksTable.getColumnModel().getColumn(0).setPreferredWidth(35);
+        booksTable.getColumnModel().getColumn(1).setPreferredWidth(160);
+        booksTable.getColumnModel().getColumn(2).setPreferredWidth(120);
+        booksTable.getColumnModel().getColumn(3).setPreferredWidth(90);
+        booksTable.getColumnModel().getColumn(4).setPreferredWidth(60);
+        booksTable.getColumnModel().getColumn(5).setPreferredWidth(50);
+        booksTable.getColumnModel().getColumn(6).setPreferredWidth(140);
 
         JScrollPane tableScroll = new JScrollPane(booksTable);
         tableScroll.setBorder(null);
         tableScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        styleScrollBar(tableScroll.getVerticalScrollBar());
 
-        JScrollBar vBar = tableScroll.getVerticalScrollBar();
+        JButton refreshBtn = styledButton("🔄 Refresh", BROWN, BROWN_HOV);
+        JButton deleteBookBtn = styledButton("🗑️ Delete Book", BROWN, BROWN_HOV);
+        JPanel tableActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 8));
+        tableActions.setBackground(BEIGE);
+        tableActions.add(deleteBookBtn);
+        tableActions.add(refreshBtn);
+
+        JLabel tableTitle = new JLabel("📚  Book Inventory");
+        tableTitle.setFont(new Font("Segoe UI Emoji", Font.BOLD, 16));
+        tableTitle.setForeground(DARK_BROWN);
+        tableTitle.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+
+        JPanel tableWrapper = new JPanel(new BorderLayout());
+        tableWrapper.setBackground(BEIGE);
+        tableWrapper.add(tableTitle,   BorderLayout.NORTH);
+        tableWrapper.add(tableScroll,  BorderLayout.CENTER);
+        tableWrapper.add(tableActions, BorderLayout.SOUTH);
+
+       
+        JPanel sidebar = new JPanel();
+        sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
+        sidebar.setBackground(BEIGE);
+        sidebar.setPreferredSize(new Dimension(300, 0));
+
+       
+        deleteUsernameField = formField();
+
+        JButton deleteUserBtn = new JButton("Delete User");
+        deleteUserBtn.setBackground(DANGER);
+        deleteUserBtn.setForeground(WHITE);
+        deleteUserBtn.setFont(new Font("Segoe UI Emoji", Font.BOLD, 13));
+        deleteUserBtn.setBorderPainted(false);
+        deleteUserBtn.setFocusPainted(false);
+        deleteUserBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        deleteUserBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        deleteUserBtn.setAlignmentX(LEFT_ALIGNMENT);
+        deleteUserBtn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) { deleteUserBtn.setBackground(DANGER_HOV); }
+            public void mouseExited(java.awt.event.MouseEvent e)  { deleteUserBtn.setBackground(DANGER); }
+        });
+
+        JPanel userCard = buildCard();
+        userCard.add(sectionTitle("🗑️  Delete User"));
+        userCard.add(Box.createVerticalStrut(4));
+        userCard.add(divider());
+        userCard.add(Box.createVerticalStrut(12));
+        userCard.add(fieldLabel("Username"));
+        userCard.add(Box.createVerticalStrut(4));
+        deleteUsernameField.setAlignmentX(LEFT_ALIGNMENT);
+        userCard.add(deleteUsernameField);
+        userCard.add(Box.createVerticalStrut(14));
+        userCard.add(deleteUserBtn);
+
+        
+        titleField  = formField();
+        authorField = formField();
+        genreField  = formField();
+        priceField  = formField();
+        stockField  = formField();
+        coverField  = formField();
+        addNumericFilter(priceField, true);
+        addNumericFilter(stockField, false);
+
+        JButton addBtn = styledButton("➕ Add Book", BROWN, BROWN_HOV);
+        addBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        addBtn.setAlignmentX(LEFT_ALIGNMENT);
+
+        JPanel bookCard = buildCard();
+        bookCard.add(sectionTitle("➕  Add New Book"));
+        bookCard.add(Box.createVerticalStrut(4));
+        bookCard.add(divider());
+        bookCard.add(Box.createVerticalStrut(12));
+        addSimpleField(bookCard, "Title",        titleField);
+        addSimpleField(bookCard, "Author",       authorField);
+        addSimpleField(bookCard, "Genre",        genreField);
+        addSimpleField(bookCard, "Price ($)",    priceField);
+        addSimpleField(bookCard, "Stock",        stockField);
+        addSimpleField(bookCard, "Cover file",   coverField);
+        bookCard.add(Box.createVerticalStrut(6));
+        bookCard.add(addBtn);
+
+       
+        sidebar.add(sidebarSection("Manage Users", userCard));
+        sidebar.add(Box.createVerticalStrut(16));
+        sidebar.add(sidebarSection("New Book", bookCard));
+        sidebar.add(Box.createVerticalGlue());
+
+        JScrollPane sidebarScroll = new JScrollPane(sidebar);
+        sidebarScroll.setBorder(null);
+        sidebarScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        sidebarScroll.getViewport().setBackground(BEIGE);
+        styleScrollBar(sidebarScroll.getVerticalScrollBar());
+
+        contentPanel.add(tableWrapper,  BorderLayout.CENTER);
+        contentPanel.add(sidebarScroll, BorderLayout.EAST);
+        add(contentPanel, BorderLayout.CENTER);
+
+        
+        addBtn.addActionListener(e        -> addBook());
+        deleteBookBtn.addActionListener(e -> deleteSelectedBook());
+        refreshBtn.addActionListener(e    -> loadBooks());
+        deleteUserBtn.addActionListener(e -> deleteUserByUsername());
+
+        loadBooks();
+    }
+
+    
+    private JPanel buildCard() {
+        JPanel card = new JPanel();
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
+        card.setBackground(WHITE);
+        card.setBorder(new CompoundBorder(
+                new LineBorder(CARD_BORDER, 1, true),
+                new EmptyBorder(18, 20, 18, 20)
+        ));
+        return card;
+    }
+
+   
+    private JLabel sectionTitle(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(new Font("Segoe UI Emoji", Font.BOLD, 15));
+        lbl.setForeground(DARK_BROWN);
+        lbl.setAlignmentX(LEFT_ALIGNMENT);
+        return lbl;
+    }
+
+   
+    private JSeparator divider() {
+        JSeparator sep = new JSeparator();
+        sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
+        sep.setForeground(CARD_BORDER);
+        sep.setAlignmentX(LEFT_ALIGNMENT);
+        return sep;
+    }
+
+    
+    private JLabel fieldLabel(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(new Font("Segoe UI Emoji", Font.BOLD, 12));
+        lbl.setForeground(DARK_BROWN);
+        lbl.setAlignmentX(LEFT_ALIGNMENT);
+        return lbl;
+    }
+
+    
+    private void addSimpleField(JPanel parent, String label, JTextField field) {
+        parent.add(fieldLabel(label));
+        parent.add(Box.createVerticalStrut(4));
+        field.setAlignmentX(LEFT_ALIGNMENT);
+        parent.add(field);
+        parent.add(Box.createVerticalStrut(10));
+    }
+
+    
+    private JPanel sidebarSection(String headerText, JPanel card) {
+        JPanel wrapper = new JPanel();
+        wrapper.setLayout(new BoxLayout(wrapper, BoxLayout.Y_AXIS));
+        wrapper.setBackground(BEIGE);
+
+        JLabel header = new JLabel(headerText);
+        header.setFont(new Font("Segoe UI Emoji", Font.BOLD, 14));
+        header.setForeground(DARK_BROWN);
+        header.setAlignmentX(LEFT_ALIGNMENT);
+        header.setBorder(BorderFactory.createEmptyBorder(0, 2, 8, 0));
+
+        wrapper.add(header);
+        wrapper.add(card);
+        return wrapper;
+    }
+
+    private JTextField formField() {
+        JTextField f = new JTextField();
+        f.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 13));
+        f.setForeground(DARK_BROWN);
+        f.setBackground(WHITE);
+        f.setMaximumSize(new Dimension(Integer.MAX_VALUE, 34));
+        f.setBorder(new CompoundBorder(
+                new LineBorder(new Color(200, 185, 170), 1, true),
+                new EmptyBorder(4, 8, 4, 8)
+        ));
+        return f;
+    }
+
+    private JButton styledButton(String text, Color bg, Color hover) {
+        JButton btn = new JButton(text);
+        btn.setBackground(bg);
+        btn.setForeground(WHITE);
+        btn.setFont(new Font("Segoe UI Emoji", Font.BOLD, 13));
+        btn.setBorderPainted(false);
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setPreferredSize(new Dimension(160, 34));
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) { btn.setBackground(hover); }
+            public void mouseExited(java.awt.event.MouseEvent e)  { btn.setBackground(bg); }
+        });
+        return btn;
+    }
+
+    private void styleScrollBar(JScrollBar vBar) {
         vBar.setUnitIncrement(16);
         vBar.setPreferredSize(new Dimension(6, 0));
         vBar.setUI(new javax.swing.plaf.basic.BasicScrollBarUI() {
             @Override protected void configureScrollBarColors() {
-                thumbColor = new Color(139, 69, 19);
-                trackColor = new Color(245, 240, 232);
+                thumbColor = BROWN;
+                trackColor = BEIGE;
             }
-            @Override protected JButton createDecreaseButton(int o) { return zeroButton(); }
-            @Override protected JButton createIncreaseButton(int o) { return zeroButton(); }
-            private JButton zeroButton() {
+            @Override protected JButton createDecreaseButton(int o) { return zeroBtn(); }
+            @Override protected JButton createIncreaseButton(int o) { return zeroBtn(); }
+            private JButton zeroBtn() {
                 JButton b = new JButton();
                 b.setPreferredSize(new Dimension(0, 0));
                 b.setMinimumSize(new Dimension(0, 0));
@@ -142,163 +348,8 @@ public class AdminPanel extends JPanel {
                 g.fillRect(r.x, r.y, r.width, r.height);
             }
         });
-        add(tableScroll, BorderLayout.CENTER);
-
-        JPanel tableWrapper = new JPanel(new BorderLayout());
-        tableWrapper.setBackground(BEIGE);
-
-        JLabel tableTitle = new JLabel("📚  Book Inventory");
-        tableTitle.setFont(new Font("Segoe UI Emoji", Font.BOLD, 16));
-        tableTitle.setForeground(DARK_BROWN);
-        tableTitle.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
-
-        // Refresh button below table
-        JButton refreshBtn = styledButton("🔄 Refresh Table");
-        JButton deleteBtn  = styledButton("🗑️  Delete Selected");
-        JPanel tableActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 8));
-        tableActions.setBackground(BEIGE);
-        tableActions.add(deleteBtn);
-        tableActions.add(refreshBtn);
-
-        tableWrapper.add(tableTitle,   BorderLayout.NORTH);
-        tableWrapper.add(tableScroll,  BorderLayout.CENTER);
-        tableWrapper.add(tableActions, BorderLayout.SOUTH);
-
-        // ── ADD BOOK FORM (right side) ────────────────────────────────────────
-        JPanel formCard = new JPanel();
-        formCard.setLayout(new BoxLayout(formCard, BoxLayout.Y_AXIS));
-        formCard.setBackground(WHITE);
-        formCard.setBorder(new CompoundBorder(
-                new LineBorder(new Color(210, 195, 180), 1, true),
-                new EmptyBorder(20, 22, 20, 22)
-        ));
-        formCard.setPreferredSize(new Dimension(290, 0));
-
-        JLabel formTitle = new JLabel("Add New Book");
-        formTitle.setFont(new Font("Segoe UI Emoji", Font.BOLD, 17));
-        formTitle.setForeground(DARK_BROWN);
-        formTitle.setAlignmentX(LEFT_ALIGNMENT);
-
-        JSeparator sep = new JSeparator();
-        sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
-        sep.setForeground(new Color(210, 195, 180));
-
-        titleField  = formField();
-        authorField = formField();
-        genreField  = formField();
-        priceField  = formField();
-        stockField  = formField();
-        coverField  = formField();
-
-        // restrict price/stock to numeric input
-        addNumericFilter(priceField, true);   // decimals allowed
-        addNumericFilter(stockField, false);  // integers only
-
-        JButton addBtn = styledButton("➕ Add Book");
-        addBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
-        addBtn.setAlignmentX(LEFT_ALIGNMENT);
-
-        formCard.add(formTitle);
-        formCard.add(Box.createVerticalStrut(4));
-        formCard.add(sep);
-        formCard.add(Box.createVerticalStrut(16));
-
-        addLabeledField(formCard, "Title",
-                "The full name of the book as it appears on the cover.", titleField);
-        addLabeledField(formCard, "Author",
-                "First and last name of the author (e.g. J.K. Rowling).", authorField);
-        addLabeledField(formCard, "Genre",
-                "Category the book belongs to (e.g. Fantasy, Thriller, Self-Help).", genreField);
-        addLabeledField(formCard, "Price ($)",
-                "Selling price in US dollars. Use decimals for cents (e.g. 12.99).", priceField);
-        addLabeledField(formCard, "Stock",
-                "Number of copies currently available in inventory.", stockField);
-        addLabeledField(formCard, "Cover filename",
-                "Image filename inside pics/books_cover/ (e.g. atomic_habits.jpg).", coverField);
-
-        formCard.add(Box.createVerticalStrut(18));
-        formCard.add(addBtn);
-
-        JPanel formWrapper = new JPanel(new BorderLayout());
-        formWrapper.setBackground(BEIGE);
-        JLabel formSection = new JLabel("➕  New Book");
-        formSection.setFont(new Font("Segoe UI Emoji", Font.BOLD, 16));
-        formSection.setForeground(DARK_BROWN);
-        formSection.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
-        formWrapper.add(formSection, BorderLayout.NORTH);
-        formWrapper.add(formCard,    BorderLayout.CENTER);
-
-        contentPanel.add(tableWrapper, BorderLayout.CENTER);
-        contentPanel.add(formWrapper,  BorderLayout.EAST);
-        add(contentPanel, BorderLayout.CENTER);
-
-        // ── wire up buttons ───────────────────────────────────────────────────
-        addBtn.addActionListener(e    -> addBook());
-        deleteBtn.addActionListener(e -> deleteSelectedBook());
-        refreshBtn.addActionListener(e -> loadBooks());
-
-        loadBooks();
     }
 
-    // ── helpers ───────────────────────────────────────────────────────────────
-
-    /**
-     * Adds a label, a small description line, and the field to the form panel.
-     */
-    private void addLabeledField(JPanel parent, String labelText,
-                                  String description, JTextField field) {
-        JLabel lbl = new JLabel(labelText);
-        lbl.setFont(new Font("Segoe UI Emoji", Font.BOLD, 13));
-        lbl.setForeground(DARK_BROWN);
-        lbl.setAlignmentX(LEFT_ALIGNMENT);
-
-        JLabel desc = new JLabel("<html>" + description + "</html>");
-        desc.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 11));
-        desc.setForeground(new Color(140, 120, 100));
-        desc.setAlignmentX(LEFT_ALIGNMENT);
-
-        field.setAlignmentX(LEFT_ALIGNMENT);
-
-        parent.add(lbl);
-        parent.add(Box.createVerticalStrut(2));
-        parent.add(desc);
-        parent.add(Box.createVerticalStrut(4));
-        parent.add(field);
-        parent.add(Box.createVerticalStrut(12));
-    }
-
-    /** A styled text field matching the bookstore form design. */
-    private JTextField formField() {
-        JTextField f = new JTextField();
-        f.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 13));
-        f.setForeground(DARK_BROWN);
-        f.setBackground(WHITE);
-        f.setMaximumSize(new Dimension(Integer.MAX_VALUE, 34));
-        f.setBorder(new CompoundBorder(
-                new LineBorder(new Color(200, 185, 170), 1, true),
-                new EmptyBorder(4, 8, 4, 8)
-        ));
-        return f;
-    }
-
-    /** A styled brown button. */
-    private JButton styledButton(String text) {
-        JButton btn = new JButton(text);
-        btn.setBackground(BROWN);
-        btn.setForeground(WHITE);
-        btn.setFont(new Font("Segoe UI Emoji", Font.BOLD, 13));
-        btn.setBorderPainted(false);
-        btn.setFocusPainted(false);
-        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.setPreferredSize(new Dimension(160, 34));
-        btn.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent e) { btn.setBackground(BROWN_HOV); }
-            public void mouseExited(java.awt.event.MouseEvent e)  { btn.setBackground(BROWN); }
-        });
-        return btn;
-    }
-
-    /** Restricts a text field to numeric input; allowDecimal lets through one '.'. */
     private void addNumericFilter(JTextField field, boolean allowDecimal) {
         field.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
@@ -311,8 +362,7 @@ public class AdminPanel extends JPanel {
         });
     }
 
-    // ── data operations (logic unchanged from original) ───────────────────────
-
+    
     private void loadBooks() {
         tableModel.setRowCount(0);
         List<Book> books = new ArrayList<>();
@@ -377,6 +427,38 @@ public class AdminPanel extends JPanel {
             int id = Integer.parseInt(tableModel.getValueAt(selectedRow, 0).toString());
             bookDAO.deleteBook(id);
             loadBooks();
+        }
+    }
+
+    private void deleteUserByUsername() {
+        String username = deleteUsernameField.getText().trim();
+
+        if (username.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Please enter a username.", "Missing Input", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        if (adminUser != null && adminUser.getUsername().equalsIgnoreCase(username)) {
+            JOptionPane.showMessageDialog(this,
+                    "You cannot delete your own admin account.",
+                    "Not Allowed", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Permanently delete user \"" + username + "\"?\nThis cannot be undone.",
+                "Confirm Delete User", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (confirm == JOptionPane.YES_OPTION) {
+            boolean deleted = userDAO.deleteUser(username);
+            if (deleted) {
+                JOptionPane.showMessageDialog(this,
+                        "User \"" + username + "\" has been deleted.",
+                        "Deleted", JOptionPane.INFORMATION_MESSAGE);
+                deleteUsernameField.setText("");
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "No user found with username \"" + username + "\".",
+                        "Not Found", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
