@@ -1,10 +1,7 @@
 package com.bookstore.view;
 
 import com.bookstore.model.SessionManager;
-// [ADDED] needed for My Orders nav link
 import com.bookstore.controller.CartController;
-// [ADDED] catalog must own the CartController instance
-
 import com.bookstore.database.BookDAO;
 import com.bookstore.model.Book;
 import com.bookstore.model.User;
@@ -23,14 +20,10 @@ public class CatalogPanel extends JPanel {
     private JPanel genrePanel;
     private final BookDAO bookDAO = new BookDAO();
     private List<Book> allBooks = new ArrayList<>();
-    private final java.util.Map<String, ImageIcon> imageCache = new java.util.HashMap<>(); // FIX 2: cache
-
-    // [ADDED] CartController lives here so it is shared between the catalog,
-    //         BookDetailDialog, and CartPanel — previously every "Add to Cart"
-    //         click did nothing because no controller was wired in.
+    private final java.util.Map<String, ImageIcon> imageCache = new java.util.HashMap<>(); // fix the lagging
     private CartController cartController;
 
-    //hovercode
+    //hovercode for the button
     private void addHoverEffect(JButton btn, Color normal, Color hover) {
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent e) {
@@ -42,7 +35,7 @@ public class CatalogPanel extends JPanel {
             }
         });
     }
-
+    //hovercode for the label
     private void addHoverEffectt(JLabel btn, Color normal, Color hover) {
 
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -56,7 +49,6 @@ public class CatalogPanel extends JPanel {
         });
     }
 
-    // [FIX 1] Original no-arg constructor — creates a fresh cart (app first launch)
     public CatalogPanel() {
         this(null, new CartController());
     }
@@ -75,7 +67,7 @@ public class CatalogPanel extends JPanel {
         JPanel navbar = new JPanel(new BorderLayout()) {
             @Override
             public Dimension getPreferredSize() {
-                return new Dimension(0, 100);//navbar height
+                return new Dimension(0, 100);
             }
         };
 
@@ -85,37 +77,32 @@ public class CatalogPanel extends JPanel {
 
         // LOGO
         JLabel logo = new JLabel("BOOKISH 🌸");
-
         logo.setFont(
                 new Font("Segoe UI Emoji", Font.BOLD, 30));
-        logo.setForeground(
-                new Color(59, 31, 10));
+        logo.setForeground(new Color(59, 31, 10));
 
         ImageIcon icon = new ImageIcon("pics/ICON.png");
         Image img = icon.getImage().getScaledInstance(85, 75, Image.SCALE_SMOOTH);
-
-        logo.setIcon(
-                new ImageIcon(img));
+        logo.setIcon(new ImageIcon(img));
         logo.setIconTextGap(0);
-
         JPanel navLeft = new JPanel(new FlowLayout(FlowLayout.LEFT));
         navLeft.setBackground(Color.WHITE);
         navLeft.add(logo);
 
-        //NAV LINKS(RIGHT)
+     
         JLabel homeLink = new JLabel("Home");
-
         homeLink.setFont(new Font("Segoe UI Emoji", Font.BOLD, 16));
         homeLink.setForeground(new Color(85, 85, 85));
         homeLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        addHoverEffectt(homeLink, new Color(139, 69, 19), new Color(85, 85, 85));
         homeLink.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 scrollPane.getVerticalScrollBar().setValue(0);
             }
         });
-        addHoverEffectt(homeLink, new Color(139, 69, 19), new Color(85, 85, 85));
+        
 
-        // [ADDED] Cart nav link — opens CartPanel inside the main window
+       
         JLabel cartLink = new JLabel("🛒 Cart");
         cartLink.setFont(new Font("Segoe UI Emoji", Font.BOLD, 16));
         cartLink.setForeground(new Color(85, 85, 85));
@@ -130,9 +117,10 @@ public class CatalogPanel extends JPanel {
                 parentFrame.repaint();
             }
         });
+        
+        
 
         JLabel catalogLink = new JLabel("Collection");
-
         catalogLink.setFont(new Font("Segoe UI Emoji", Font.BOLD, 16));
         catalogLink.setForeground(new Color(85, 85, 85));
         catalogLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -152,7 +140,6 @@ public class CatalogPanel extends JPanel {
         navRight.add(cartLink);
 
         if (user != null) {
-            // USER IS LOGGED IN — show clickable username label
             JLabel userLabel = new JLabel("👤 " + user.getName());
             userLabel.setFont(new Font("Segoe UI Emoji", Font.BOLD, 16));
             userLabel.setForeground(new Color(139, 69, 19));
@@ -168,12 +155,7 @@ public class CatalogPanel extends JPanel {
                     parentFrame.repaint();
                 }
             });
-            // [ADDED] Logout button — did not exist before.
-            // When clicked it:
-            //   1. Sets SessionManager.currentUser to null (clears the session)
-            //   2. Replaces the content pane with a guest CatalogPanel(null)
-            //      so the window stays open but the user is now logged out,
-            //      and the navbar switches back to showing Login + Register.
+            
             JButton logoutBtn = new JButton("Logout");
             logoutBtn.setBackground(new Color(139, 69, 19));
             logoutBtn.setForeground(Color.WHITE);
@@ -210,9 +192,9 @@ public class CatalogPanel extends JPanel {
             }
 
             navRight.add(userLabel);
-            navRight.add(logoutBtn); // [ADDED] logout sits right of the username
+            navRight.add(logoutBtn); 
         } else {
-            // NOT LOGGED IN — show Login link and Register button as before
+            
             JButton registerBtn = new JButton("Register");
             registerBtn.setBackground(new Color(139, 69, 19));
             registerBtn.setForeground(Color.WHITE);
@@ -222,8 +204,6 @@ public class CatalogPanel extends JPanel {
             registerBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
             addHoverEffect(registerBtn, new Color(139, 69, 19), new Color(160, 82, 45));
             registerBtn.addActionListener(e -> {
-                // [CHANGED] was: new SigninFrame();  (popup)
-                // Now: swaps content pane with SigninPanel (same window)
                 JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(CatalogPanel.this);
                 SigninPanel signinPanel = new SigninPanel(parentFrame);
                 parentFrame.setContentPane(signinPanel);
@@ -238,8 +218,6 @@ public class CatalogPanel extends JPanel {
             addHoverEffectt(loginLink, new Color(139, 69, 19), new Color(85, 85, 85));
             loginLink.addMouseListener(new java.awt.event.MouseAdapter() {
                 public void mouseClicked(java.awt.event.MouseEvent e) {
-                    // [CHANGED] was: new LoginFrame();  (popup)
-                    // Now: swaps content pane with LoginPanel (same window)
                     JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(CatalogPanel.this);
                     LoginPanel loginPanel = new LoginPanel(parentFrame);
                     parentFrame.setContentPane(loginPanel);
@@ -259,7 +237,7 @@ public class CatalogPanel extends JPanel {
         add(navbar, BorderLayout.NORTH);
 
         //the hero panel(its called like ts)
-        JPanel heroPanel = new JPanel(null);//to animate the text
+        JPanel heroPanel = new JPanel(null);
         heroPanel.setBackground(new Color(245, 240, 232)); // coloring the background
         heroPanel.setPreferredSize(new Dimension(1000, 270)); //sizw
 
@@ -267,9 +245,8 @@ public class CatalogPanel extends JPanel {
         JLabel qu = new JLabel("Books You'll Actually Finish");
         qu.setFont(new Font("Serif", Font.BOLD, 36));
         qu.setForeground(new Color(59, 31, 10));
-        qu.setBounds(60, 25, 800, 50); // start LOW
+        qu.setBounds(60, 25, 800, 50); 
 
-        //discrption
         //discrption
         JLabel desc = new JLabel(
                 "<html>"
@@ -303,7 +280,7 @@ public class CatalogPanel extends JPanel {
         heroPanel.add(desc);
         heroPanel.add(BB);
 
-        //SEARCH + GENRES + BOOKS all in one scrollable center panel
+       
         JPanel centerPanel = new JPanel();
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         centerPanel.setBackground(new Color(245, 240, 232));
@@ -557,7 +534,6 @@ public class CatalogPanel extends JPanel {
         card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createLineBorder(new Color(100, 100, 100), 1));
 
-        // COVER — FIX 2: use cache to avoid re-scaling on every filter
         coverPanel = new JPanel(new BorderLayout());
         coverPanel.setPreferredSize(new Dimension(350, 500));
 
@@ -594,7 +570,7 @@ public class CatalogPanel extends JPanel {
         infoPanel.add(Box.createVerticalStrut(3));
         infoPanel.add(authorLabel);
 
-        // FIX 1: add the missing footer with price + Add to Cart
+      
         JPanel footerPanel = new JPanel(new BorderLayout());
         footerPanel.setBackground(Color.WHITE);
         footerPanel.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));

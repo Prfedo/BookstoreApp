@@ -1,16 +1,16 @@
 package com.bookstore.view;
 
 import com.bookstore.model.Book;
-import com.bookstore.controller.CartController; // [ADDED] needed to actually add books to cart
+import com.bookstore.controller.CartController; 
 import javax.swing.*;
 import java.awt.*;
 
 public class BookDetailDialog extends JDialog {
 
-    // [ADDED] cartController field so we can call addToCart
+    
     private CartController cartController;
 
-    // [MODIFIED] constructor now accepts CartController so the dialog can add to cart
+   
     public BookDetailDialog(JFrame parent, Book book, CartController cartController) {
         super(parent, book.getTitle(), true);
         this.cartController = cartController;
@@ -19,20 +19,17 @@ public class BookDetailDialog extends JDialog {
             book.getAuthor(),
             book.getGenre(),
             String.format("$%.2f", book.getPrice()),
-            book,           // [ADDED] pass the full Book object so addToCart gets it
+            book,           
             null
         );
     }
 
-    // [KEPT] string-array constructor retained for backward compatibility,
-    //        but it cannot add to cart (no Book id / price available as a Book object)
-    //        — callers should migrate to the Book constructor above.
     public BookDetailDialog(JFrame parent, String[] bookArr) {
         super(parent, bookArr[0], true);
         buildUI(bookArr[0], bookArr[1], bookArr[2], bookArr[3], null, bookArr);
     }
 
-    // [EXTRACTED] shared UI builder to avoid duplicating Swing code
+    
     private void buildUI(String title, String author, String genre,
                          String price, Book book, String[] bookArr) {
         setSize(400, 300);
@@ -81,7 +78,7 @@ public class BookDetailDialog extends JDialog {
         qtyPanel.add(qtyLabel);
         qtyPanel.add(qtySpinner);
 
-        // ADD TO CART BUTTON
+        
         JButton addBtn = new JButton("Add to Cart");
         addBtn.setBackground(new Color(139, 69, 19));
         addBtn.setForeground(Color.WHITE);
@@ -91,13 +88,9 @@ public class BookDetailDialog extends JDialog {
         addBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         addBtn.addActionListener(e -> {
             int qty = (int) qtySpinner.getValue();
-
-            // [FIXED] was a TODO stub — now actually calls cartController.addToCart()
-            //         only works when the Book object is available (not the legacy String[] path)
             if (cartController != null && book != null) {
                 cartController.addToCart(book, qty);
             }
-            // [KEPT] confirmation dialog so user knows the action worked
             JOptionPane.showMessageDialog(this,
                 qty + " copy of \"" + title + "\" added to cart!",
                 "Added to Cart",
